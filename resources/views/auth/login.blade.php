@@ -8,7 +8,7 @@
 <section class="{{isset($active) ? 'active' : ''}}" >
     <div class="containerrr {{isset($active) ? 'active' : ''}}">
         <div class="user signinBx">
-            <div class="imgBx" src=""><img src="{{asset('images/dummy/no-message-record.png')}}"></div>
+            <div class="imgBx" src=""><img src="{{asset('images/login/login1.jpg')}}"></div>
             <div class="formBx">
                 <form method="POST" class="login_form" action="{{ route('login.dosignin') }}" onsubmit="return login(event)">
                     @csrf
@@ -78,7 +78,7 @@
 
         <div class="user signupBx">
             <div class="formBx">
-                <form  method="POST" class="register_form" onclick="register()" action="{{ route('register.dosignup') }}">
+                <form  method="POST" class="register_form" onsubmit="register(event)" action="{{ route('register.dosignup') }}">
                     @csrf
                     <h2>Create an account</h2>
                     <input id="reg-name" type="text" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus placeholder="Name">
@@ -92,7 +92,7 @@
                     <a class="signup">Already have an account? <a href="javascript:void(0)" onclick="toggleForm()">Sign in.</a></a>
                 </form>
             </div>
-            <div class="imgBx" src=""><img src="{{asset('images/dummy/no-message-record.png')}}"></div>
+            <div class="imgBx" src=""><img src="{{asset('images/login/login2.jpg')}}"></div>
         </div>
     </div>
 </section>
@@ -175,7 +175,7 @@ function register(event){
 				if(response.data._token == false) {
 					$('.register_form').append('<span class="text-danger error">Please enter correct credentials</span>')
 				} else {
-                    window.location.href="{{route('home')}}";				
+                    window.location.href="{{route('home')}}";			
                 }
 			}
 			jQuery(".loading, .custom-red").toggle();

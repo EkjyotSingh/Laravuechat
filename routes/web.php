@@ -19,19 +19,20 @@ use App\Http\Controllers\Auth\RegisterController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
+Route::middleware(['guest'])->group(function(){
 
 Route::get('/sign-in', [AuthController::class,'showLoginForm'])->name('login');
 Route::get('/sign-up', [AuthController::class,'showLoginForm'])->name('register');
+});
 Route::post('/do-sign-up', [AuthController::class,'register'])->name('register.dosignup');
 Route::post('/do-sign-in', [AuthController::class,'login'])->name('login.dosignin');
 
 Route::middleware(['auth'])->group(function(){
-    
+    Route::get('/', function () {
+        return view('home');
+    })->name('home');
 Route::post('/logout', [AuthController::class,'logout'])->name('logout');
-Route::get('/home', [HomeController::class,'index'])->name('home');
 Route::get('userlist', [MessageController::class,'user_list'])->name('user.list');
 Route::get('usermessage/{id}', [MessageController::class,'user_message'])->name('user.message');
 Route::post('senemessage', [MessageController::class,'send_message'])->name('user.message.send');

@@ -50,7 +50,7 @@ return view('auth.login');
 			foreach($errors_object as $field_name => $error_array) {
 				$error_msg_array[$field_name] = $error_array[0];
 			}
-			if(count($error_msg_array) == 1) {
+			//if(count($error_msg_array) == 1) {
 				foreach($error_msg_array as $key => $error) {
 					return Response::json(array(
 						'error'		=> 	true,
@@ -58,7 +58,7 @@ return view('auth.login');
 						'data' 		=> 	$error_msg_array
 					), 200);
 				}
-			}
+			//}
 			return Response::json(array(
 				'error'		=> 	true,
 				'message' 	=> 	"Some fields are empty or having an error",
