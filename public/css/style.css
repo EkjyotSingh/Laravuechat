@@ -1,0 +1,426 @@
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
+    font: 16px sans-serif;
+  }
+  
+  :focus {
+    outline: 0;
+  }
+  
+  a {
+    text-decoration: none;
+  }
+  
+  body {
+    background: #F4F7F9;
+  }
+  
+  html, body {
+    height: 100% !important;
+  }
+  
+  .containerr {
+    display: flex;
+    height: 100% !important;
+  }
+  
+  sidebar {
+    width: 300px;
+    min-width: 300px;
+    display: flex;
+    background: #fff;
+    flex-direction: column;
+    border-right: 1px solid #ccc;
+    transition: 500ms all;
+    z-index: 99;
+  }
+  .unread{
+      background:rgb(220 215 52 / 25%) !important;
+  }
+  sidebar .logo {
+    display: flex;
+    margin: 10px 0 0 0;
+    padding-bottom: 10px;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-size: 3em;
+    letter-spacing: 7px;
+    border-bottom: 1px solid #ccc;
+  }
+  sidebar .list-wrap {
+    width: 100%;
+    overflow: auto;
+    height:calc( 100vh - 126px );
+    max-height:calc( 100vh - 126px );
+  }
+  sidebar .list-wrap .list {
+    border-bottom: 1px solid #ccc;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    height: 70px;
+    cursor: pointer;
+  }
+  sidebar .list-wrap .list:hover, sidebar .list-wrap .list.active {
+    background: #F4F7F9;
+  }
+  sidebar .list-wrap .list img {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    margin-right: 10px;
+    border:1px solid #0000001c;
+    /*box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);*/
+  }
+  sidebar .list-wrap .list .info {
+    flex: 1;
+  }
+  sidebar .list-wrap .list .info .user {
+    font-weight: 700;
+  }
+  sidebar .list-wrap .list .info .text {
+    display: flex;
+    margin-top: 3px;
+    font-size: 0.85em;
+  }
+  sidebar .list-wrap .list .time {
+    margin-right: 5px;
+    margin-left: 5px;
+    font-size: 0.75em;
+    color: #a9a9a9;
+  }
+  sidebar .list-wrap .list .count {
+    font-size: 0.75em;
+    background: #bde2f7;
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.7);
+    padding: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    color: #000;
+  }
+  
+  .nomessageselected{
+      display: flex;
+      height: 100%;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+  }
+  .no-message-selected{
+      color: #d0d0d0;
+      margin-top: 30px;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 18px;
+  }
+  .no-message-found{
+      color: #999;
+      display: block;
+      font-size: 18px;
+      line-height: 20px;
+      font-style: normal;
+      margin-top: 30px;
+  }
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .content header {
+    height: 76px;
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    padding: 10px;
+    align-items: center;
+  }
+  .content header img {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    margin-right: 10px;
+      border:1px solid #0000001c;
+    /*box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);*/
+  }
+  .content header .info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    flex: 1;
+  }
+  .content header .info .user {
+    font-weight: 700;
+  }
+  .content header .info .time {
+    display: flex;
+    margin-top: 3px;
+    font-size: 0.85em;
+  }
+  .content header .open {
+    display: none;
+  }
+  .content header .open a {
+    color: #000;
+    letter-spacing: 3px;
+  }
+  
+  .message-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    overflow: auto;
+    min-height: calc( 100vh - 261px );
+    max-height: calc( 100vh - 261px );
+  }
+  /*.message-wrap::before {
+    content: "";
+    margin-bottom: auto;
+  }*/
+  .message-wrap .message-list {
+    align-self: flex-start;
+    max-width: 80%;
+    margin-bottom:30px;
+  }
+  .message-list .time {
+      font-size: 11px!important;
+  }
+  .message-list .time span {
+      font-size: 11px!important;
+  }
+  .message-wrap .message-list.me {
+    align-self: flex-end;
+    /*min-height:85px;*/
+  }
+  .message-wrap .message-list.me .msg {
+    background: #bde2f7;
+    color: #111;
+  }
+  .message-wrap .message-list .msg {
+      white-space:pre-wrap;
+      word-break: break-word;
+    background: #fff;
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.1);
+    padding: 7px 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+  }
+  .message-wrap .message-list .time {
+    text-align: right;
+    color: #999;
+    font-size: 0.75em;
+  }
+  
+  .message-footer {
+    border-top: 1px solid #ddd;
+    background: #eee;
+    padding: 10px;
+    display: flex;
+    align-items:center;
+  }
+  .message-footer input {
+    flex: 1;
+    padding: 0 20px;
+    border-radius: 5px;
+  }
+  .offerer .msg{
+      border-bottom-left-radius: 0px!important;
+  }
+  .me .msg{
+      border-bottom-right-radius: 0px!important;
+  }
+  
+  /*//// Delete Modal css*/
+  .delete_button {
+    background-color: transparent;
+    font-size: 22px;
+    padding: 10px 9px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    opacity: 0.9;
+  }
+  
+  .delete_button:hover {
+    opacity:1;
+  }
+  
+  /* Float cancel and delete buttons and add an equal width */
+  .cancelbtn, .deletebtn {
+    float: left;
+    padding: 10px 14px;
+    color:white !important;
+    cursor:pointer;
+  }
+  
+  /* Add a color to the cancel button */
+  .cancelbtn {
+    background-color: #ccc;
+  }
+  
+  /* Add a color to the delete button */
+  .deletebtn {
+    background-color: #94C2ED;
+  }
+  
+  
+  
+  /* The Modal (background) */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 999; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: #474e5dd4;
+      justify-content: center;
+      align-items: center;
+  }
+  .modal-container{
+      text-align: center;
+      padding: 18px;
+  }
+  /* Modal Content/Box */
+  .modal-content {
+    background-color: #fefefe;
+    margin: auto auto auto auto; /* 5% from the top, 15% from the bottom and centered */
+    border: 1px solid #888;
+    width: 40%; /* Could be more or less, depending on screen size */
+  }
+  
+  /* Style the horizontal ruler */
+  hr {
+    border: 1px solid #f1f1f1;
+    margin-bottom: 25px;
+  }
+  
+  .modal-clearfix {
+      display: flex;
+      padding: 0px 37px;
+      justify-content: space-between;
+  }
+  @media only screen and (max-width: 480px), only screen and (max-width: 767px) {
+      .modal-content {
+    width: 80%; /* Could be more or less, depending on screen size */
+  }
+    sidebar {
+      position: absolute;
+      width: 100%;
+      min-width: 100%;
+      height: 0vh;
+      bottom: 0;
+      box-shadow: 0 5px 25px -5px black;
+    }
+    sidebar.opened {
+      /*height: 70vh !important;*/
+      height: calc( 100vh - 126px ) !important;
+    }
+    sidebar .logo {
+      display: none;
+    }
+    sidebar .list-wrap .list .count {
+      font-size: 0.75em;
+    }
+  
+    header .open {
+      display: block !important;
+      line-height: 2;
+    }
+  }    
+  .single-message-delete-container{
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+  }
+  .single-message-delete-button-left{
+      margin-right: 10px;
+      color:red;
+      cursor:pointer;
+  }
+  .single-message-delete-button-right{
+      margin-left: 10px;
+      color:red;
+      cursor:pointer;
+  }
+  .latest-message{
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis!important;
+      width: 157px;
+      display: block!important;
+  }
+  .btnsendmsg{
+      width: 51px;
+      padding-left: 10px;
+      color: rgb(146 203 241);
+      font-size: 35px;
+  }
+  .unread_tick{
+      font-size: 13px;
+  }
+  .read_tick{
+      color:#07bf07;
+      font-size: 13px;
+  }
+  .fa-cog{
+      color:#17a5f5;
+      font-size:22px;
+      cursor:pointer;
+      margin-left:13px;
+      display:none;
+  }
+  @media only screen and (max-width: 320px){
+      .latest-message{
+      width: 185px;
+  }
+  }
+  @media only screen and (min-width: 370px){
+      .latest-message{
+      width: 227px;
+  }
+  }
+  @media only screen and (min-width: 450px){
+      .latest-message{
+      width: 157px;
+  }
+  }
+  @media only screen and (min-width: 767px){
+      .navbar{
+      display: none;
+  }
+  .fa-cog{
+      display:inline-block;
+  }
+  .message-wrap {
+      height: calc( 100vh - 211px );
+      max-height: calc( 100vh - 211px );
+  }
+  sidebar .list-wrap {
+      width: 100%;
+      overflow: auto;
+      height: calc( 100vh - 76px );
+      max-height: calc( 100vh - 76px );
+  }
+  }
+  li.nav-item.dropdown {
+      z-index: 999;
+  }
+  .emojionearea .emojionearea-editor {
+      max-height: 8em;
+  }
+  textarea.form-control {
+      height: 114px;
+      max-height: 114px;
+  }
