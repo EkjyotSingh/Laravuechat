@@ -88,7 +88,7 @@
                     <input id="reg-password" type="password" class="@error('password') is-invalid @enderror" name="password" required autocomplete="new-password" placeholder="Password">
                     <span class="error-msg"></span>
                     <input id="password-confirm" type="password" class="" name="password_confirmation" required autocomplete="new-password" placeholder="Confirm Password">
-                    <button type="submit" class="">Sign Up</button>
+                    <button type="submit" class="waves-effect waves-light custom-red">Sign Up</button>
                     <a class="signup">Already have an account? <a href="javascript:void(0)" onclick="toggleForm()">Sign in.</a></a>
                 </form>
             </div>
@@ -147,7 +147,7 @@ function register(event){
     event.preventDefault();
 	jQuery(".loading, .custom-red").toggle();
 	$('.error-msg').text('');
-	$('#email, #password').removeClass("is-invalid")
+	$('#reg-email, #reg-password','#reg-name').removeClass("is-invalid")
 	jQuery.ajax({
 		type:"post",
 		data:$('.register_form').serialize(),

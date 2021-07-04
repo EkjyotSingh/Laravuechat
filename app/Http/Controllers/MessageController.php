@@ -19,17 +19,17 @@ class MessageController extends Controller
         //dd($users);
         if(\Request::ajax()){
 
-            $unreadIds = Message::select(\DB::raw('`from` as sender_id, count(`from`) as messages_count' ))
+            $unreadIds = Message::select(\DB::raw('"from" as sender_id, count("from") as messages_count' ))
             ->where('to', auth()->id())
             ->where('read', false)
             ->where('type', 1)
             ->groupBy('from')
             ->get();
-            $to=Message::select(\DB::raw('`to` as sender_id, max(id) as latest_msg' ))
+            $to=Message::select(\DB::raw('"to" as sender_id, max(id) as latest_msg' ))
             ->where('from', auth()->id())
             ->where('type', 0)
             ->groupBy('to');
-            $latest_ms=Message::select(\DB::raw('`from` as sender_id, max(id) as latest_msg' ))
+            $latest_ms=Message::select(\DB::raw('"from" as sender_id, max(id) as latest_msg' ))
             ->where('to', auth()->id())
             ->where('type', 1)
             ->groupBy('from')

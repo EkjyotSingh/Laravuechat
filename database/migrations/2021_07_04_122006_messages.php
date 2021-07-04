@@ -20,7 +20,6 @@ class Messages extends Migration
             $table->boolean('read')->default(false);
             $table->text('message');
             $table->boolean('type');
-            $table->string('profile_image')->nullable();
             $table->timestamps();
         });
     }
