@@ -1,5 +1,7 @@
 /node_modules
 /public/hot
+/config/database.php
+/database/migrations
 /public/storage
 /storage/*.key
 /vendor

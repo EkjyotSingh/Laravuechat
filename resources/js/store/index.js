@@ -35,7 +35,7 @@ export default {
                          chatWindow.scrollTo(xH, xH);
       }
     },500);
-        
+    jQuery('.loader-container').css('display','none');
         return state.userMessage;
     },
     userSort(state,payload){
@@ -62,6 +62,47 @@ export default {
     },
     activeunreadcoun(state,payload){
         state.activeunreadcoun = payload;
+    },
+    psuedoMessageDelete(state,payload){
+        if(!payload.messageId){
+            state.userMessage.messages=[]; 
+
+            state.userList=state.userList.filter((user)=>{
+                    if(state.userMessage.user.id == user.id)
+                    {
+                        user.latestMessage = '';
+                        user.latestMessageId = '';
+                    }
+                return user;
+            });
+        }else{
+            state.userMessage.messages = state.userMessage.messages.filter((message)=>{
+                if(message.id != payload.messageId){
+                    return message;
+                }
+                return '';
+            });
+            if(payload.userMessageId == payload.messageId)
+            {
+                state.userList=state.userList.filter((user)=>{
+                    if(user.id == state.userMessage.user.id)
+                    { 
+                        if(state.userMessage.messages.length - 1 >=0)
+                        {
+                            user.latestMessage = state.userMessage.messages[state.userMessage.messages.length - 1].message;
+                            user.latestMessageId = state.userMessage.messages[state.userMessage.messages.length - 1].id;
+                            return user;
+                        }else{
+                            user.latestMessage = '';
+                            user.latestMessageId = '';
+                            return user;
+                        }
+                    }
+                    return user;
+                });
+                
+            }
+        }       
     }
   },
   actions: { 
@@ -72,7 +113,6 @@ export default {
         })
     },
     userMessage(context,payload){
-       
       Axios.get('/usermessage/'+payload.userId)
       .then(response=>{
         context.commit("userMessage",{data:response.data,chat_start:payload.chat_start});
@@ -87,6 +127,9 @@ export default {
     },
     activeunreadcoun(context,payload){
         context.commit("activeunreadcoun",payload);
+    },
+    psuedoMessageDelete(context,payload){
+        context.commit("psuedoMessageDelete",payload);
     }
 
    },

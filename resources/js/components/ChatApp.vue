@@ -1,5 +1,29 @@
 <template>
     <div class="containerr">
+        <div class="loader-container">
+    <div class="loader">
+        <span style="--i:1;"></span>
+        <span style="--i:2;"></span>
+        <span style="--i:3;"></span>
+        <span style="--i:4;"></span>
+        <span style="--i:5;"></span>
+        <span style="--i:6;"></span>
+        <span style="--i:7;"></span>
+        <span style="--i:8;"></span>
+        <span style="--i:9;"></span>
+        <span style="--i:10;"></span>
+        <span style="--i:11;"></span>
+        <span style="--i:12;"></span>
+        <span style="--i:13;"></span>
+        <span style="--i:14;"></span>
+        <span style="--i:15;"></span>
+        <span style="--i:16;"></span>
+        <span style="--i:17;"></span>
+        <span style="--i:18;"></span>
+        <span style="--i:19;"></span>
+        <span style="--i:20;"></span>
+    </div>
+</div>
         <sidebar class="opened" id="sidebar">
         <span class="logo">{{appName}}</span>
             <div class="list-wrap" v-if="userList">
@@ -7,7 +31,7 @@
             <img :src="profileImagePath+'/'+user.image" onerror="this.onerror=null;this.src=noPersonImage" alt="" />
             <div class="info">
                 <span class="user" v-if="user.name">{{user.name}}</span>
-                <span class="text latest-message"  v-if="user.latestMessage">{{user.latestMessage}}</span>
+                <span class="text latest-message"  :data-id="user.latestMessageId" v-if="user.latestMessage">{{user.latestMessage}}</span>
                 <span class="text" v-else>No conversation</span>
             </div>
             <span class="count" v-if="user.unread">{{user.unread}}</span>
@@ -102,7 +126,7 @@
 
       <div class="modal-clearfix">
         <button type="button" class="cancelbtn" @click.prevent="cancelDelete" :disabled="deletealldisable">Cancel</button>
-        <a  class="deletebtn" @click.prevent="(deleteType == 'all') ? (deletealldisable ? '' : deleteAllMessage()) : deleteSingleMessage(singleMessageId)" >{{deletealltext}}</a>
+        <a  class="deletebtn" @click.prevent="(deleteType == 'all') ? (deletealldisable ? '' : deleteAllMessage()) : (deleteSingleMessage(singleMessageId))" >{{deletealltext}}</a>
       </div>
     </div>
   </div>
@@ -247,18 +271,9 @@ Echo.join('liveuser')
           this.$store.dispatch('activeunreadcoun',activeunreadcoun)
           },
       async async(unread,id){
+        jQuery('.loader-container').css('display','flex');
          await this.activecount(unread); 
          await this.selectUser(id);
-      },
-      allDeleteMessages(){
-          document.getElementById('id01').style.display='flex';
-          this.deleteType='all';
-      },
-      deleteSingleIdChange(messageId,ownerId){
-      this.singleMessageId = messageId;
-      this.deleteType='single';
-      this.deleteMessageOwnerId = ownerId ;
-      document.getElementById('id01').style.display='flex';
       },
       openCoversations(){
         jQuery('#sidebar').toggleClass('opened');
@@ -272,35 +287,39 @@ Echo.join('liveuser')
        setTimeout(function(){
            jQuery('.msg').removeClass('unread')
        },6000)
-        //setTimeout(function(){
-            
-// },80)
     //this.$store.dispatch('userSort',userId)
     },
     sendMessage(e){
       e.preventDefault();
       var message = jQuery('#custom-emoji').val();
-      if(message!=''){
+      if(message.trim() != ''){
         this.$store.dispatch('psuedoMessageAdd',message);
         setTimeout(function(){
-        var chatWindow = document.getElementById('message-wrap'); 
-                         var xH = chatWindow.scrollHeight; 
+        var chatWindow = document.getElementById('message-wrap');
+                         var xH = chatWindow.scrollHeight;
                          chatWindow.scrollTo(xH, xH);
         },20);
         axios.post('/senemessage',{message:message,user_id:this.userMessage.user.id})
         .then(response=>{
-          this.selectUser(this.userMessage.user.id);
+            this.singleMessageId = response.data.from == this.authuserr.id ? response.data.id - 1 : response.data.id;
+            this.selectUser(this.userMessage.user.id,this.chat_start);
         })
         this.message = '';
         jQuery("#custom-emoji")[0].emojioneArea.setText('');
       }
+    },
+    deleteSingleIdChange(messageId,ownerId){
+        this.singleMessageId = messageId;
+        this.deleteType='single';
+        this.deleteMessageOwnerId = ownerId ;
+        document.getElementById('id01').style.display='flex';
     },
     deleteSingleMessage(messageId){
          this.deletealldisable=true;
         this.deletealltext='Deleting...';
       axios.get(`/deletesinglemessage/${messageId}`)
       .then(response=>{
-        this.selectUser(this.userMessage.user.id)
+        this.$store.dispatch('psuedoMessageDelete',{messageId:messageId,userMessageId: jQuery('.list.active .latest-message').attr("data-id")});
         document.getElementById('id01').style.display='none';
          this.deletealldisable = false;
         this.deletealltext='Delete';
@@ -310,12 +329,16 @@ Echo.join('liveuser')
         this.deletealltext='Try again';
       })
     },
+    allDeleteMessages(){
+        document.getElementById('id01').style.display='flex';
+        this.deleteType='all';
+    },
     deleteAllMessage(){
         this.deletealldisable=true;
         this.deletealltext='Deleting...';
         axios.get(`/deleteallmessage/${this.userMessage.user.id}`)
       .then(response=>{
-        this.selectUser(this.userMessage.user.id)
+        this.$store.dispatch('psuedoMessageDelete',{messageId:'',userMessageId: jQuery('.list.active .latest-message').attr("data-id")});
         document.getElementById('id01').style.display='none'
         this.deletealldisable = false;
         this.deletealltext='Delete';

@@ -8,7 +8,7 @@
 <section class="{{isset($active) ? 'active' : ''}}" >
     <div class="containerrr {{isset($active) ? 'active' : ''}}">
         <div class="user signinBx">
-            <div class="imgBx" src=""><img src="{{asset('images/login/login1.jpg')}}"></div>
+            {{--<div class="imgBx" src=""><img src="{{asset('images/login/login1.jpg')}}"></div>--}}
             <div class="formBx">
                 <form method="POST" class="login_form" action="{{ route('login.dosignin') }}" onsubmit="return login(event)">
                     @csrf
@@ -23,53 +23,12 @@
                         <span class="error-msg"></span>
                     </div>
                     <button type="submit" class="waves-effect waves-light custom-red">Login</button>
-                    <div class="loading" style="display:none;">
-                        <div class="preloader-wrapper big active">
-                            <div class="spinner-layer spinner-blue">
-                                <div class="circle-clipper left">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="gap-patch">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="circle-clipper right">
-                                    <div class="circle"></div>
-                                </div>
-                            </div>
-                            <div class="spinner-layer spinner-red">
-                                <div class="circle-clipper left">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="gap-patch">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="circle-clipper right">
-                                    <div class="circle"></div>
-                                </div>
-                            </div>
-                            <div class="spinner-layer spinner-yellow">
-                                <div class="circle-clipper left">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="gap-patch">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="circle-clipper right">
-                                    <div class="circle"></div>
-                                </div>
-                            </div>
-                            <div class="spinner-layer spinner-green">
-                                <div class="circle-clipper left">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="gap-patch">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="circle-clipper right">
-                                    <div class="circle"></div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="svg-container">
+                        <svg class="svg">
+                            <circle cx="23" cy="23" r="24">
+
+                            </circle>
+                        </svg>
                     </div>
                     <a class="signup">don't have an account? <a href="javascript:void(0)" onclick="toggleForm()">Sign up.</a></a>
                 </form>
@@ -90,9 +49,16 @@
                     <input id="password-confirm" type="password" class="" name="password_confirmation" required autocomplete="new-password" placeholder="Confirm Password">
                     <button type="submit" class="waves-effect waves-light custom-red">Sign Up</button>
                     <a class="signup">Already have an account? <a href="javascript:void(0)" onclick="toggleForm()">Sign in.</a></a>
+                    <div class="svg-container">
+                        <svg class="svg">
+                            <circle cx="23" cy="23" r="24">
+
+                            </circle>
+                        </svg>
+                    </div>
                 </form>
             </div>
-            <div class="imgBx" src=""><img src="{{asset('images/login/login2.jpg')}}"></div>
+            {{--<div class="imgBx" src=""><img src="{{asset('images/login/login2.jpg')}}"></div>--}}
         </div>
     </div>
 </section>
@@ -109,6 +75,7 @@ function toggleForm(){
 function login(event){
     event.preventDefault();
 	jQuery(".loading, .custom-red").toggle();
+    jQuery(".signinBx .svg-container").css('display','flex');
 	$('.error-msg').text('');
 	$('#email, #password').removeClass("is-invalid")
 	jQuery.ajax({
@@ -137,7 +104,9 @@ function login(event){
                     window.location.href="{{route('home')}}";
 				}
 			}
+            jQuery(".signinBx .svg-container").css('display','none');
 			jQuery(".loading, .custom-red").toggle();
+            
 		}
 	});
 	return false;
@@ -146,6 +115,7 @@ function login(event){
 function register(event){
     event.preventDefault();
 	jQuery(".loading, .custom-red").toggle();
+    jQuery(".signupBx .svg-container").css('display','flex');
 	$('.error-msg').text('');
 	$('#reg-email, #reg-password','#reg-name').removeClass("is-invalid")
 	jQuery.ajax({
@@ -178,6 +148,7 @@ function register(event){
                     window.location.href="{{route('home')}}";			
                 }
 			}
+            jQuery(".signupBx .svg-container").css('display','none');
 			jQuery(".loading, .custom-red").toggle();
 		}
 	});
@@ -187,6 +158,46 @@ function register(event){
 @endsection
 @section('style')
 <style>
+    .svg-container{
+    display:none;
+    justify-content:center;
+    }
+    .svg{
+        width:55px;
+        height:55px;
+        position:relative;
+        animation:animaterotate 2s linear infinite;
+    }
+    @keyframes animaterotate{
+        0%{
+            transform:rotate(0deg);
+        }
+        100%{
+            transform:rotate(360deg)
+        }
+    }
+    .svg circle{
+        width:100%;
+        height:100%;
+        fill:none;
+        stroke-width:3;
+        stroke:#00a1ff;
+        transform:translate(5px,5px);
+        stroke-dasharray:150;
+        stroke-dashoffset:150;
+        animation:animateoffset 2s linear infinite;
+    }
+    @keyframes animateoffset{
+        0%,100%{
+            stroke-dashoffset:150;
+        }
+        50%{
+            stroke-dashoffset:0;
+        }
+        50.1%{
+            stroke-dashoffset:300;
+        }
+    }
     .error-msg{
         font-size:13px;
         color:#f71414;
@@ -291,7 +302,6 @@ section .containerrr .user .formBx button{
     transition:0.5s;
     padding:10px 20px;
     margin-top:10px;
-    margin-bottom:25px;
     display:block;
 }
 section .containerrr .user.signupBx .formBx button{
@@ -306,6 +316,8 @@ section .containerrr .user .formBx .signup{
     text-transform:uppercase;
     font-weight:300;
     text-decoration:none;
+    margin-top: 16px;
+    display:inline-block;
 }
 section .containerrr .user .formBx .signup a{
     font-weight:600;

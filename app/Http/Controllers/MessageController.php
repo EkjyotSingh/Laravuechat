@@ -35,6 +35,22 @@ class MessageController extends Controller
             ->groupBy('from')
             ->unionall($to)
             ->get();
+            //$unreadIds = Message::select(\DB::raw('`from` as sender_id, count(`from`) as messages_count' ))
+            //->where('to', auth()->id())
+            //->where('read', false)
+            //->where('type', 1)
+            //->groupBy('from')
+            //->get();
+            //$to=Message::select(\DB::raw('`to` as sender_id, max(id) as latest_msg' ))
+            //->where('from', auth()->id())
+            //->where('type', 0)
+            //->groupBy('to');
+            //$latest_ms=Message::select(\DB::raw('`from` as sender_id, max(id) as latest_msg' ))
+            //->where('to', auth()->id())
+            //->where('type', 1)
+            //->groupBy('from')
+            //->unionall($to)
+            //->get();
             
 //dd($to->get());
         // add an unread key to each contact with the count of unread messages
@@ -43,6 +59,7 @@ class MessageController extends Controller
             $r=$latest_ms->where('sender_id', $contact->id)->union($latest_ms->where('sender_id',auth()->user()->id)->first())->sortby('latest_msg')->last();
             $l_msg=$r ?Message::where('id',$r->latest_msg)->first() : null;
             $contact->latestMessage = $l_msg ? $l_msg->message : '';
+            $contact->latestMessageId = $l_msg ? $l_msg->id : '';
             $contact->unread = $contactUnread ? $contactUnread->messages_count : 0;
             return $contact;
             
@@ -94,7 +111,17 @@ echo $e;
         if(!\Request::ajax()){
           return  abort(404);
         }
-        Message::findOrFail($id)->delete();
+        Message::where('id',$id)->where(
+                            function($query) {
+                            return $query
+                                    ->where('from', auth()->user()->id)
+                                    ->Where('type', '0');
+                            })->orWhere(
+                                function($query) {
+                                return $query
+                                        ->where('to', auth()->user()->id)
+                                        ->Where('type', '1');
+                                })->first()->delete();
         return response()->json('deleted',200);
     }
     public function delete_all_message($id=null){
@@ -113,7 +140,7 @@ echo $e;
             $q->where('from',$id);
             $q->where('to',auth()->user()->id);
             $q->where('type',1);
-        })->with('user')->get(); 
+        })->with('user')->orderby('id')->get(); 
         return $messages;
     }
 }
