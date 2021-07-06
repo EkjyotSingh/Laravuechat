@@ -37,6 +37,9 @@
     transition: 500ms all;
     z-index: 99;
   }
+  .logo-link{
+      text-decoration: none!important;
+  }
   .unread{
       background:rgb(220 215 52 / 25%) !important;
   }

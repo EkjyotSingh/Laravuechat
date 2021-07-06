@@ -25,7 +25,7 @@
     </div>
 </div>
         <sidebar class="opened" id="sidebar">
-        <span class="logo">{{appName}}</span>
+        <a :href="appUrl" class="logo-link"><span class="logo">{{appName}}</span></a>
             <div class="list-wrap" v-if="userList">
             <div class="list" @click.prevent="async(user.unread,user.id)" :data-count=user.unread v-for="user in userList" :key="user.id" :class="[userMessage.user ? ( userMessage.user.id===user.id ? 'active' : '') : '']">
             <img :src="profileImagePath+'/'+user.image" onerror="this.onerror=null;this.src=noPersonImage" alt="" />
@@ -236,7 +236,8 @@ Echo.join('liveuser')
        deletealltext:'Delete',
        logout:logout,
        profileUpdate:profileUpdate,
-       profileImagePath:profileImagePath
+       profileImagePath:profileImagePath,
+       appUrl:appUrl
     }
   },
   computed:{

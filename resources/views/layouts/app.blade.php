@@ -103,6 +103,7 @@
         var noMessageSelected = "{{asset('images/dummy/no-message-select-img.png')}}";
         var noMessageFound = "{{asset('images/dummy/no-message-record.png')}}";
         var appName = "{{ config('app.name', 'Laravel') }}";
+        var appUrl = "{{ config('app.url', '') }}";
         var logout = "{{route('logout')}}";
         var profileUpdate = "{{route('profile.edit')}}";
         var profileImagePath = "{{asset('storage')}}";
