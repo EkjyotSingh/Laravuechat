@@ -8,7 +8,7 @@
 <section class="{{isset($active) ? 'active' : ''}}" >
     <div class="containerrr {{isset($active) ? 'active' : ''}}">
         <div class="user signinBx">
-            {{--<div class="imgBx" src=""><img src="{{asset('images/login/login1.jpg')}}"></div>--}}
+            <div class="imgBx" src=""><img src="{{asset('images/login/login1.jpg')}}"></div>
             <div class="formBx">
                 <form method="POST" class="login_form" action="{{ route('login.dosignin') }}" onsubmit="return login(event)">
                     @csrf
@@ -48,7 +48,6 @@
                     <span class="error-msg"></span>
                     <input id="password-confirm" type="password" class="" name="password_confirmation" required autocomplete="new-password" placeholder="Confirm Password">
                     <button type="submit" class="waves-effect waves-light custom-red">Sign Up</button>
-                    <a class="signup">Already have an account? <a href="javascript:void(0)" onclick="toggleForm()">Sign in.</a></a>
                     <div class="svg-container">
                         <svg class="svg">
                             <circle cx="23" cy="23" r="24">
@@ -56,9 +55,10 @@
                             </circle>
                         </svg>
                     </div>
+                    <a class="signup">Already have an account? <a href="javascript:void(0)" onclick="toggleForm()">Sign in.</a></a>
                 </form>
             </div>
-            {{--<div class="imgBx" src=""><img src="{{asset('images/login/login2.jpg')}}"></div>--}}
+            <div class="imgBx" src=""><img src="{{asset('images/login/login2.jpg')}}"></div>
         </div>
     </div>
 </section>

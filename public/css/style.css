@@ -3,7 +3,7 @@
     padding: 0;
     border: 0;
     box-sizing: border-box;
-    font: 16px sans-serif;
+    font: 16px Nunito,sans-serif;
   }
   
   :focus {
@@ -42,14 +42,15 @@
   }
   sidebar .logo {
     display: flex;
-    margin: 10px 0 0 0;
-    padding-bottom: 10px;
     align-items: center;
     justify-content: center;
     color: #000;
-    font-size: 3em;
-    letter-spacing: 7px;
+    font-size: 2em;
+    font-weight:700;
+    height:76px;
+    letter-spacing: 3px;
     border-bottom: 1px solid #ccc;
+    text-shadow: 3px 4px 7px rgb(189 187 180 / 80%);
   }
   sidebar .list-wrap {
     width: 100%;
@@ -160,6 +161,9 @@
   }
   .content header .info .user {
     font-weight: 700;
+  }
+  .content header .user {
+    margin-bottom:0px;
   }
   .content header .info .time {
     display: flex;
@@ -325,8 +329,7 @@
       box-shadow: 0 5px 25px -5px black;
     }
     sidebar.opened {
-      /*height: 70vh !important;*/
-      height: calc( 100vh - 186px ) !important;
+      height: calc( 100vh - 184px ) !important;
     }
     sidebar .logo {
       display: none;
@@ -420,6 +423,7 @@
   }
   .emojionearea .emojionearea-editor {
       max-height: 8em !important;
+      word-break: break-word;
   }
   textarea.form-control {
       height: 114px;

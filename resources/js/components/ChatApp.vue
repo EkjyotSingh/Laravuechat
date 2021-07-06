@@ -34,7 +34,7 @@
                 <span class="text latest-message"  :data-id="user.latestMessageId" v-if="user.latestMessage">{{user.latestMessage}}</span>
                 <span class="text" v-else>No conversation</span>
             </div>
-            <span class="count" v-if="user.unread">{{user.unread}}</span>
+            <span class="count" v-if="user.unread != 0">{{user.unread}}</span>
             <div v-if="!(typing && (typing.id == user.id))">
                     <span class="time" v-if="onlineUser(user.id) || online.id == user.id">online</span>
                     <span class="time" v-else>offline</span>
@@ -87,6 +87,13 @@
             </header>
             <div style="height:calc(100vh - 126px );">
             <div v-if="userMessage.messages" id="message-wrap" class="message-wrap" >
+            <infinite-loading spinner="waveDots" direction="top" @infinite="infiniteHandler">
+                <span slot="no-more"></span>
+                 <div slot="no-results"></div>
+                 <div slot="error" slot-scope="{ trigger }">
+    Error message, click <a href="javascript:;" @click="trigger">here</a> to retry
+  </div>
+            </infinite-loading>
             <div class="message-list"  v-for="message in userMessage.messages" :key="message.id" :id="'message'+( message.to == authuserr.id ? (message.read == 0 ? '-unread' :'-read') : '')+'-'+message.id" :ref="'message-'+message.id" v-bind:class="[message.to == userMessage.user.id ? 'me' : 'offerer' ]">
                 <div class="single-message-delete-container">
                     <span v-if="message.from != userMessage.user.id" @click.prevent="deleteSingleIdChange(message.id,message.from)" class="single-message-delete-button-left"><i class="fa fa-trash-o"></i></span>
@@ -94,9 +101,9 @@
                     <span v-if="message.from == userMessage.user.id" @click.prevent="deleteSingleIdChange(message.id,message.from)" class="single-message-delete-button-right"><i class="fa fa-trash-o"></i></span>
                 </div>
                 <div class="time">{{message.created_at | timeformat}} 
-                    <span v-if="(message.from == authuserr.id && message.id == 'psuedoid')"><i class="fa fa-clock-o"></i></span>
-                    <span v-if="(message.from == authuserr.id && message.id != 'psuedoid' && message.read == 0)"><i class="fa fa-check unread_tick"></i></span>
-                    <span v-if="(message.from == authuserr.id && message.id != 'psuedoid' && message.read != 0)"><i class="fa fa-check read_tick"></i></span>
+                    <span v-if="(message.from == authuserr.id &&  /psuedoid/.test(message.id))"><i class="fa fa-clock-o"></i></span>
+                    <span v-if="(message.from == authuserr.id && !/psuedoid/.test(message.id) && message.read == 0)"><i class="fa fa-check unread_tick"></i></span>
+                    <span v-if="(message.from == authuserr.id && !/psuedoid/.test(message.id) && message.read != 0)"><i class="fa fa-check read_tick"></i></span>
                 </div>
             </div>
             <div class="nomessageselected" v-if="userMessage.messages.length == 0">
@@ -148,13 +155,17 @@ window.onclick = function(event) {
 }
 import _ from 'lodash';
 import { mapGetters } from "vuex";
+import InfiniteLoading from 'vue-infinite-loading';
 export default {
   mounted(){
       this.authuserr=authuser;
     Echo.private(`chat.${authuser.id}`)
     .listen('MessageSend', (e) => {
         if(this.chat_start && this.userMessage.user.id == e.message.from){
-       this.selectUser(e.message.from,(this.chat_start && this.userMessage.user.id == e.message.from)? true : false);
+            this.$store.dispatch('messageReceive',e);
+            this.readedEvent(e.message.from);
+            this.singleMessageId = e.message.id;
+    //   this.selectUser(e.message.from,(this.chat_start && this.userMessage.user.id == e.message.from)? true : false);
         }
         this.$store.dispatch('userList');
 
@@ -201,6 +212,7 @@ Echo.join('liveuser')
   },
   data(){
     return{
+        page: 1,
        message:'',
        typing:{
 
@@ -241,26 +253,38 @@ Echo.join('liveuser')
   },
   watch:{
       userMessage:{
-          deep: true,
+        deep: true,
         handler: function() {
-            this.cd()
+            this.cd();
         }
     
       }
   },
   methods:{
+       infiniteHandler($state) {
+            this.$store.dispatch('userMessage',{userId:this.userMessage.user.id,page:this.page,chat_start:true})
+            .then(response => {
+                    if(response >0){
+                    $state.loaded();
+                    }else{
+                    $state.complete();
+                    }
+                }, error => {
+            })
+            this.page++;
+       },
       cd(){
-          setTimeout(()=>{
-            jQuery("#custom-emoji").emojioneArea({
+            setTimeout(()=>{
+                jQuery("#custom-emoji").emojioneArea({
                     hidePickerOnBlur: true,
                     saveEmojisAs: 'unicode',
                     events: {
-                    keydown: (editor, event)=> {
-                    this.typeingEvent(this.userMessage.user.id);
+                        keydown: (editor, event)=> {
+                            this.typeingEvent(this.userMessage.user.id);
+                        }
                     }
-                }
                 }); 
-          },60)
+            },60)
       },
       cancelDelete(){
         document.getElementById('id01').style.display='none';
@@ -280,29 +304,30 @@ Echo.join('liveuser')
       },
     selectUser(userId,chat_start){
         this.chat_start =true;
-       this.$store.dispatch('userMessage',{userId:userId,chat_start:chat_start});
-       this.$store.dispatch('userList');
-       this.readedEvent(userId);
-       jQuery('#sidebar').removeClass('opened');
-       setTimeout(function(){
-           jQuery('.msg').removeClass('unread')
-       },6000)
+        this.$store.dispatch('userMessage',{userId:userId,chat_start:chat_start});
+        this.$store.dispatch('userList');
+        this.readedEvent(userId);
+        jQuery('#sidebar').removeClass('opened');
+        setTimeout(function(){
+            jQuery('.msg').removeClass('unread')
+        },6000)
     //this.$store.dispatch('userSort',userId)
     },
     sendMessage(e){
       e.preventDefault();
       var message = jQuery('#custom-emoji').val();
       if(message.trim() != ''){
-        this.$store.dispatch('psuedoMessageAdd',message);
+        var random = Math.floor(Math.random());
+        this.$store.dispatch('psuedoMessageAdd',{message:message,psuedoId:random});
         setTimeout(function(){
-        var chatWindow = document.getElementById('message-wrap');
-                         var xH = chatWindow.scrollHeight;
-                         chatWindow.scrollTo(xH, xH);
+            var chatWindow = document.getElementById('message-wrap');
+            var xH = chatWindow.scrollHeight;
+            chatWindow.scrollTo(xH-1, xH);
         },20);
         axios.post('/senemessage',{message:message,user_id:this.userMessage.user.id})
         .then(response=>{
-            this.singleMessageId = response.data.from == this.authuserr.id ? response.data.id - 1 : response.data.id;
-            this.selectUser(this.userMessage.user.id,this.chat_start);
+            this.singleMessageId = response.data.id - 1;
+            this.$store.dispatch('messageAdd',{id:response.data.id - 1,read:response.data.read,psuedoId:random});
         })
         this.message = '';
         jQuery("#custom-emoji")[0].emojioneArea.setText('');
@@ -315,19 +340,19 @@ Echo.join('liveuser')
         document.getElementById('id01').style.display='flex';
     },
     deleteSingleMessage(messageId){
-         this.deletealldisable=true;
+        this.deletealldisable=true;
         this.deletealltext='Deleting...';
-      axios.get(`/deletesinglemessage/${messageId}`)
-      .then(response=>{
-        this.$store.dispatch('psuedoMessageDelete',{messageId:messageId,userMessageId: jQuery('.list.active .latest-message').attr("data-id")});
-        document.getElementById('id01').style.display='none';
-         this.deletealldisable = false;
-        this.deletealltext='Delete';
-      })
-      .catch(error=>{
-        this.deletealldisable = false;
-        this.deletealltext='Try again';
-      })
+        axios.get(`/deletesinglemessage/${messageId}`)
+        .then(response=>{
+            this.$store.dispatch('psuedoMessageDelete',{messageId:messageId,userMessageId: jQuery('.list.active .latest-message').attr("data-id")});
+            document.getElementById('id01').style.display='none';
+            this.deletealldisable = false;
+            this.deletealltext='Delete';
+        })
+        .catch(error=>{
+            this.deletealldisable = false;
+            this.deletealltext='Try again';
+        })
     },
     allDeleteMessages(){
         document.getElementById('id01').style.display='flex';

@@ -52,7 +52,6 @@ class MessageController extends Controller
             //->unionall($to)
             //->get();
             
-//dd($to->get());
         // add an unread key to each contact with the count of unread messages
         $user = $users->map(function($contact) use ($unreadIds , $latest_ms) {
             $contactUnread = $unreadIds->where('sender_id', $contact->id)->first();
@@ -64,18 +63,17 @@ class MessageController extends Controller
             return $contact;
             
         });
-        //dd($user);
         return response()->json($user,200);
     }
         return abort(404);
     }
-    public function user_message($id=null){
+    public function user_message($id=null,$page=0,$limit=0){
         if(!\Request::ajax()){
            return abort(404);
         }
 
         $user = User::findOrFail($id);
-       $messages = $this-> message_by_user_id($id);
+       $messages = $this-> message_by_user_id($id ,$page,$limit);
        Message::where('from', $id)->where('to', auth()->id())->update(['read' => true]);
 
         return response()->json([
@@ -99,6 +97,7 @@ class MessageController extends Controller
         'to'=>$request->user_id,
         'type'=>1
     ]);
+    $messages->read = 0;
     try{
        broadcast(new MessageSend($messages));
        return response()->json($messages,201);
@@ -111,27 +110,33 @@ echo $e;
         if(!\Request::ajax()){
           return  abort(404);
         }
-        Message::where('id',$id)->where(
-                            function($query) {
-                            return $query
-                                    ->where('from', auth()->user()->id)
-                                    ->Where('type', '0');
-                            })->orWhere(
-                                function($query) {
-                                return $query
-                                        ->where('to', auth()->user()->id)
-                                        ->Where('type', '1');
-                                })->first()->delete();
+        $d=Message::where(function($query) use($id){
+                                $query->where('id',$id);
+                                $query->where('from', auth()->user()->id);
+                                $query->Where('type', '0');
+                            })->orWhere(function($query) use($id){
+                                $query->where('id',$id);
+                                $query->where('to',auth()->user()->id);
+                                $query->where('type',1);
+                            })->first()->delete();
         return response()->json('deleted',200);
     }
     public function delete_all_message($id=null){
-      $messages =  $this->message_by_user_id($id);
+      $messages =  $this->message_by_user_id($id,'delete','delete');
         foreach ($messages as $value) {
           Message::findOrFail($value->id)->delete();
         }
         return response()->json('all deleted',200);
     }
-    public function message_by_user_id($id){
+
+    public function message_by_user_id($id,$page,$limit){
+        //$limit=5;
+        if($page == 'delete'){
+        }elseif($page == 0){
+            
+        }else{
+            $offset = (int)$page * $limit;
+        }
         $messages = Message::where(function($q) use($id){
             $q->where('from',auth()->user()->id);
             $q->where('to',$id);
@@ -140,7 +145,19 @@ echo $e;
             $q->where('from',$id);
             $q->where('to',auth()->user()->id);
             $q->where('type',1);
-        })->with('user')->orderby('id')->get(); 
-        return $messages;
+        })->with('user');
+
+        if($page == 'delete'){
+            $message= $messages->get();
+            return $message;
+        }elseif($page ==0){
+            $messages->orderby('id','desc')->limit($limit);
+            $message= $messages->get()->sortBy('id')->values();
+            return $message;
+        }else{
+            $messages->orderby('id','desc')->offset($offset)->limit($limit);
+            $message= $messages->get();
+            return $message;
+        }
     }
 }
