@@ -165,7 +165,9 @@ export default {
             this.$store.dispatch('messageReceive',e);
             this.readedEvent(e.message.from);
             this.singleMessageId = e.message.id;
-    //   this.selectUser(e.message.from,(this.chat_start && this.userMessage.user.id == e.message.from)? true : false);
+            axios.get('/message-readed/'+e.message.from)
+            .then(response=>{
+            })
         }
         this.$store.dispatch('userList');
 

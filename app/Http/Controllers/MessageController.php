@@ -74,12 +74,16 @@ class MessageController extends Controller
 
         $user = User::findOrFail($id);
        $messages = $this-> message_by_user_id($id ,$page,$limit);
-       Message::where('from', $id)->where('to', auth()->id())->update(['read' => true]);
+    //   Message::where('from', $id)->where('to', auth()->id())->update(['read' => true]);
+    $this->message_readed($id);
 
         return response()->json([
             'messages'=>$messages,
             'user'=>$user,
         ]);
+    }
+    function message_readed($id){
+        Message::where('from', $id)->where('to', auth()->id())->update(['read' => true]);
     }
     public function send_message(Request $request){
         if(!$request->ajax()){

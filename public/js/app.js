@@ -2043,7 +2043,8 @@ window.onclick = function (event) {
 
         _this.readedEvent(e.message.from);
 
-        _this.singleMessageId = e.message.id; //   this.selectUser(e.message.from,(this.chat_start && this.userMessage.user.id == e.message.from)? true : false);
+        _this.singleMessageId = e.message.id;
+        axios.get('/message-readed/' + e.message.from).then(function (response) {});
       }
 
       _this.$store.dispatch('userList');
