@@ -4,18 +4,18 @@ export default {
     state: {  
       userList:[],
       userMessage:[],
-      activeunreadcoun:''
+      activeunreadcoun:'',
     },
   mutations: {  
     userList(state,payload){
-    return state.userList = payload.sort(function (a, b) {
-      if (a.unread === b.unread) {
-          return 0;
-      }
-      else {
-          return (a.unread > b.unread) ? -1 : 1;
-      }
-  });
+        return state.userList = payload.sort(function (a, b) {
+        if (a.unread === b.unread) {
+            return 0;
+        }
+        else {
+            return (a.unread > b.unread) ? -1 : 1;
+        }
+    });
     },
 
     userMessage(state,payload){
@@ -140,23 +140,24 @@ export default {
         state.userList=state.userList.filter((user)=>{
             if(user.id == state.userMessage.user.id)
             {
-                    user.latestMessage = state.userMessage.messages[state.userMessage.messages.length - 1].message;
-                    user.latestMessageId = state.userMessage.messages[state.userMessage.messages.length - 1].id;
-                    user.unread = 0;
-                    return user;
-                    console.log(user)
+                user.latestMessage = state.userMessage.messages[state.userMessage.messages.length - 1].message;
+                user.latestMessageId = state.userMessage.messages[state.userMessage.messages.length - 1].id;
+                user.unread = 0;
+                return user;
             }
             return user;
         });
     }
-  },
+},
   actions: { 
+      //userlist fetch///
     userList(context){
         Axios.get('/userlist')
         .then(response=>{
           context.commit("userList",response.data);
         })
     },
+        ////usermessage fetch////
     userMessage(context,payload){
         var limit = 5;
         limit = (Number(context.state.activeunreadcoun)>limit -3) ? Number(context.state.activeunreadcoun) + limit : Number(limit) ;
@@ -164,40 +165,42 @@ export default {
             Axios.get('/usermessage/'+payload.userId+'/'+payload.page+'/'+limit)
             .then(response=>{
                 context.commit("userMessage",{data:response.data,chat_start:payload.chat_start,page:payload.page});
-                resolve(response.data.messages.length);
+                resolve(limit - response.data.messages.length > 0 ? 'completed' : 'havemoredata');
             },error => {
                 reject(error);
             })
     })
     },
-    userSort(context,payload){
-        context.commit("userSort",payload);
+        //not used anywhere in web app but for future use if we want to make selected user at top of userlist////
+        userSort(context,payload){
+            context.commit("userSort",payload);
+        },
+        ////when message sent then upto the time response doesnot recieved this adds  message to chatarea////
+        psuedoMessageAdd(context,payload){
+            context.commit("psuedoMessageAdd",payload);
+        },
+        activeunreadcoun(context,payload){
+            context.commit("activeunreadcoun",payload);
+        },
+        ////when message response recieved this takes care of message id supplied to deletemessage popup////
+        psuedoMessageDelete(context,payload){
+            context.commit("psuedoMessageDelete",payload);
+        },
+        ////adds original message and replace psuedomessage after getting response//////
+        messageAdd(context,payload){
+            context.commit("messageAdd",payload);
+        },
+        ////works during send message listening event triggers after recieving message this action adds message in chatarea/////
+        messageReceive(context,payload){
+            context.commit("messageReceive",payload);
+        }
     },
-    psuedoMessageAdd(context,payload){
-        context.commit("psuedoMessageAdd",payload);
-    },
-    activeunreadcoun(context,payload){
-        context.commit("activeunreadcoun",payload);
-    },
-    psuedoMessageDelete(context,payload){
-        context.commit("psuedoMessageDelete",payload);
-    },
-    messageAdd(context,payload){
-        context.commit("messageAdd",payload);
-    },
-    messageReceive(context,payload){
-        context.commit("messageReceive",payload);
-    }
-
-   },
-  getters: {
-    userList(state){
-      return state.userList
-
-
-     },
-     userMessage(state){
-       return state.userMessage
-     }
+    getters: {
+        userList(state){
+            return state.userList
+        },
+        userMessage(state){
+            return state.userMessage
+        },
     }
 }

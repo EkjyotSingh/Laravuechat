@@ -3,12 +3,6 @@
 use Illuminate\Support\Str;
 $DATABASE_URL=parse_url(env('DATABASE_URL',''));
 
-//DB_CONNECTION=pgsql
-//DB_HOST=ec2-52-6-77-239.compute-1.amazonaws.com
-//DB_PORT=5432
-//DB_DATABASE=dcffcnfo590c05
-//DB_USERNAME=zjfdsxkzoqdpyf
-//DB_PASSWORD=951f48b975c27a5f5e99269e30d59a5ab700cfc4c8af7601880e618f0e802553
 return [
 
     /*

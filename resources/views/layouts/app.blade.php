@@ -106,7 +106,7 @@
         var appUrl = "{{ config('app.url', '') }}";
         var logout = "{{route('logout')}}";
         var profileUpdate = "{{route('profile.edit')}}";
-        var profileImagePath = "{{asset('storage')}}";
+        var profileImagePath = "{{asset('/')}}";
     </script>
     @endif
 </body>

@@ -77,12 +77,12 @@
     border-radius: 50%;
     width: 50px;
     height: 50px;
-    object-fit: cover;
+    /*object-fit: cover;*/
     margin-right: 10px;
     border:1px solid #0000001c;
     /*box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);*/
   }
-  sidebar .list-wrap .list .info {
+  sidebar .list-wrap .list .info  {
     flex: 1;
   }
   sidebar .list-wrap .list .info .user {
@@ -109,6 +109,7 @@
     border-radius: 50%;
     text-align: center;
     color: #000;
+    margin-left:15px;
   }
   
   .nomessageselected{
@@ -151,10 +152,9 @@
     border-radius: 50%;
     width: 50px;
     height: 50px;
-    object-fit: cover;
+    /*object-fit: cover;*/
     margin-right: 10px;
       border:1px solid #0000001c;
-    /*box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.5);*/
   }
   .content header .info {
       display: flex;
@@ -362,11 +362,13 @@
       cursor:pointer;
   }
   .latest-message{
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis!important;
-      width: 157px;
-      display: block!important;
+    white-space: break-spaces;
+    word-break: break-all;
+    overflow: hidden;
+    height: 17px;
+    text-overflow: ellipsis!important;
+    /*width: 157px;*/
+    display: block!important;
   }
   .btnsendmsg{
       width: 51px;
@@ -390,17 +392,17 @@
   }
   @media only screen and (max-width: 320px){
       .latest-message{
-      width: 185px;
+      /*width: 185px;*/
   }
   }
   @media only screen and (min-width: 370px){
       .latest-message{
-      width: 227px;
+      /*width: 227px;*/
   }
   }
   @media only screen and (min-width: 450px){
       .latest-message{
-      width: 157px;
+      /*width: 157px;*/
   }
   }
   @media only screen and (min-width: 767px){

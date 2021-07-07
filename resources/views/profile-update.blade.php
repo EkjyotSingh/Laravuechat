@@ -8,7 +8,7 @@
     @csrf
     @method("PUT")
     <div class="form-group text-center align-items-center justify-content-center d-flex flex-column">
-        <img id="preview-profile-image" src="{{asset('storage/'.$profile->image)}}" alt="..."  onerror="this.onerror=null; this.src=`{{asset('/images/dummy/no-person-img.jpg')}}`" class=" text-center border @error('profile_image_input') border-danger @else border-dark  @enderror" style="width:102px;height:102px;">
+        <img id="preview-profile-image" src="{{asset($profile->image)}}" alt="..."  onerror="this.onerror=null; this.src=`{{asset('/images/dummy/no-person-img.jpg')}}`" class=" text-center border @error('profile_image_input') border-danger @else border-dark  @enderror" style="width:102px;height:102px;">
         <span class=" mt-4" style="cursor:pointer;font-size:24px;" onclick="document.getElementById('profile_image_input').click();"><i class="fa fa-camera" aria-hidden="true"></i></span> 
         <input type="file" class="d-none" name="profile_image_input" id="profile_image_input" onchange="imageChange()">
         @error('profile_image_input')

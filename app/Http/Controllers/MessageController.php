@@ -134,7 +134,6 @@ echo $e;
     }
 
     public function message_by_user_id($id,$page,$limit){
-        //$limit=5;
         if($page == 'delete'){
         }elseif($page == 0){
             
