@@ -2103,35 +2103,30 @@ window.onclick = function (event) {
   methods: {
     /////for adding and configuring vue scolladdmore ///////
     infiniteHandler: function infiniteHandler($state) {
-      var _this2 = this;
-
-      if (this.page == 1) {
-        //console.log('l')
-        $state.complete();
-        setTimeout(function () {
-          _this2.page++;
-          $state.reset();
-        }, 600);
-      } else {
-        this.$store.dispatch('userMessage', {
-          userId: this.userMessage.user.id,
-          page: this.page,
-          chat_start: true
-        }).then(function (response) {
-          if (response == 'havemoredata') {
-            console.log($state);
-            $state.loaded();
-          } else {
-            $state.complete();
-          }
-        }, function (error) {//$state.error();
-        });
-        this.page++;
-      }
+      //if(this.page == 1){
+      //console.log('l')
+      //    $state.complete();
+      //    setTimeout(()=>{this.page++;$state.reset()},600)
+      //}else{
+      this.$store.dispatch('userMessage', {
+        userId: this.userMessage.user.id,
+        page: this.page,
+        chat_start: true
+      }).then(function (response) {
+        if (response == 'havemoredata') {
+          console.log($state);
+          $state.loaded();
+        } else {
+          $state.complete();
+        }
+      }, function (error) {
+        $state.error();
+      });
+      this.page++; //}
     },
     ////for configuring and adding emojionearea in textarea//////
     cd: function cd() {
-      var _this3 = this;
+      var _this2 = this;
 
       setTimeout(function () {
         jQuery("#custom-emoji").emojioneArea({
@@ -2139,7 +2134,7 @@ window.onclick = function (event) {
           saveEmojisAs: 'unicode',
           events: {
             keydown: function keydown(editor, event) {
-              _this3.typeingEvent(_this3.userMessage.user.id);
+              _this2.typeingEvent(_this2.userMessage.user.id);
             }
           }
         });
@@ -2156,7 +2151,7 @@ window.onclick = function (event) {
     },
     ////on particular user click////
     async: function async(unread, id) {
-      var _this4 = this;
+      var _this3 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee() {
         return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee$(_context) {
@@ -2165,14 +2160,14 @@ window.onclick = function (event) {
               case 0:
                 jQuery('.loader-container').css('display', 'flex'); ///this is for infintite scroll loader//
 
-                _this4.page = 1; //////
+                _this3.page = 1; //////
 
                 _context.next = 4;
-                return _this4.activecount(unread);
+                return _this3.activecount(unread);
 
               case 4:
                 _context.next = 6;
-                return _this4.selectUser(id);
+                return _this3.selectUser(id);
 
               case 6:
               case "end":
@@ -2209,7 +2204,7 @@ window.onclick = function (event) {
     },
     /////when send message button clicked/////
     sendMessage: function sendMessage(e) {
-      var _this5 = this;
+      var _this4 = this;
 
       e.preventDefault();
       var message = jQuery('#custom-emoji').val();
@@ -2229,9 +2224,9 @@ window.onclick = function (event) {
           message: message,
           user_id: this.userMessage.user.id
         }).then(function (response) {
-          _this5.singleMessageId = response.data.id - 1;
+          _this4.singleMessageId = response.data.id - 1;
 
-          _this5.$store.dispatch('messageAdd', {
+          _this4.$store.dispatch('messageAdd', {
             id: response.data.id - 1,
             read: response.data.read,
             psuedoId: random
@@ -2249,22 +2244,22 @@ window.onclick = function (event) {
       document.getElementById('id01').style.display = 'flex';
     },
     deleteSingleMessage: function deleteSingleMessage(messageId) {
-      var _this6 = this;
+      var _this5 = this;
 
       this.deletealldisable = true;
       this.deletealltext = 'Deleting...';
       axios.get("/deletesinglemessage/".concat(messageId)).then(function (response) {
-        _this6.$store.dispatch('psuedoMessageDelete', {
+        _this5.$store.dispatch('psuedoMessageDelete', {
           messageId: messageId,
           userMessageId: jQuery('.list.active .latest-message').attr("data-id")
         });
 
         document.getElementById('id01').style.display = 'none';
-        _this6.deletealldisable = false;
-        _this6.deletealltext = 'Delete';
+        _this5.deletealldisable = false;
+        _this5.deletealltext = 'Delete';
       })["catch"](function (error) {
-        _this6.deletealldisable = false;
-        _this6.deletealltext = 'Try again';
+        _this5.deletealldisable = false;
+        _this5.deletealltext = 'Try again';
       });
     },
     ////when allmessage delete button clicked this function tells popup that this is for all message delete///
@@ -2273,23 +2268,23 @@ window.onclick = function (event) {
       this.deleteType = 'all';
     },
     deleteAllMessage: function deleteAllMessage() {
-      var _this7 = this;
+      var _this6 = this;
 
       this.deletealldisable = true;
       this.deletealltext = 'Deleting...';
       axios.get("/deleteallmessage/".concat(this.userMessage.user.id)).then(function (response) {
-        _this7.$store.dispatch('psuedoMessageDelete', {
+        _this6.$store.dispatch('psuedoMessageDelete', {
           messageId: '',
           userMessageId: jQuery('.list.active .latest-message').attr("data-id")
         });
 
         document.getElementById('id01').style.display = 'none';
-        _this7.deletealldisable = false;
-        _this7.deletealltext = 'Delete';
+        _this6.deletealldisable = false;
+        _this6.deletealltext = 'Delete';
       })["catch"](function (error) {
         ///when any error occur in deleting message////
-        _this7.deletealldisable = false;
-        _this7.deletealltext = 'Try again';
+        _this6.deletealldisable = false;
+        _this6.deletealltext = 'Try again';
       });
     },
     ///typing event triggers from cd()////

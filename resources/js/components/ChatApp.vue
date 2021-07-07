@@ -236,11 +236,11 @@ export default {
     methods:{
         /////for adding and configuring vue scolladdmore ///////
         infiniteHandler($state) {
-            if(this.page == 1){
+            //if(this.page == 1){
                 //console.log('l')
-                $state.complete();
-                setTimeout(()=>{this.page++;$state.reset()},600)
-            }else{
+            //    $state.complete();
+            //    setTimeout(()=>{this.page++;$state.reset()},600)
+            //}else{
             this.$store.dispatch('userMessage',{userId:this.userMessage.user.id,page:this.page,chat_start:true})
             .then(response => {
                 if(response == 'havemoredata'){
@@ -250,10 +250,10 @@ export default {
                     $state.complete();
                 }
                 }, error => {
-                    //$state.error();
+                    $state.error();
             })
             this.page++;
-            }
+            //}
             
         },
         ////for configuring and adding emojionearea in textarea//////
