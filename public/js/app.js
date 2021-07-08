@@ -1976,6 +1976,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
 // Get the modal
 var modal = document.getElementById('id01'); // When the user clicks anywhere outside of the modal, close it
 
@@ -2005,7 +2006,17 @@ window.onclick = function (event) {
 
         _this.readedEvent(e.message.from);
 
-        _this.singleMessageId = e.message.id;
+        _this.singleMessageId = e.message.id; ////check if message area is scrollable or not.If not then don't show new message button/////
+
+        if (document.getElementById('message-wrap').scrollHeight > document.getElementById('message-wrap').clientHeight) {
+          _this.newMessageCount = document.getElementsByClassName('unread').length;
+          _this.newMessage = true;
+        } else {
+          setTimeout(function () {
+            jQuery('.msg').removeClass('unread');
+          }, 3000);
+        }
+
         axios.get('/message-readed/' + e.message.from).then(function (response) {});
       }
 
@@ -2054,6 +2065,9 @@ window.onclick = function (event) {
   },
   data: function data() {
     return {
+      newMessageCount: 1,
+      newMessage: false,
+      infiniteLoaderResetter: 1,
       timerId: '',
       page: 1,
       message: '',
@@ -2101,32 +2115,80 @@ window.onclick = function (event) {
     }
   },
   methods: {
+    ////when clicked on new message button this function scrolls to new message///////
+    scrollToNewMessage: function scrollToNewMessage() {
+      var unreadHeight = 0;
+
+      for (var i = 1; i <= $('.unread').length; i++) {
+        var unreadHeight = unreadHeight + jQuery('.unread').eq(Number(-i)).prop("scrollHeight") + 73;
+      }
+
+      if (!unreadHeight) {
+        unreadHeight = 0;
+      }
+
+      var chatWindow = document.getElementById('message-wrap');
+      var xH = chatWindow.scrollHeight - unreadHeight;
+      chatWindow.scrollTo(xH, xH);
+      this.newMessage = false;
+      setTimeout(function () {
+        jQuery('.msg').removeClass('unread');
+      }, 2000);
+    },
+    /////when new message recieved from selected user if scroll is at bottom then new message indicator is hidden by this function///////
+    newMessageChecker: function newMessageChecker() {
+      var _this2 = this;
+
+      if (this.userMessage.messages && this.userMessage.messages.length > 0) {
+        var element = document.getElementById('message-wrap');
+        element.addEventListener('scroll', function (event) {
+          var unreadHeight = 0;
+
+          for (var i = 1; i <= $('.unread').length; i++) {
+            var unreadHeight = unreadHeight + jQuery('.unread').eq(Number(-i)).prop("scrollHeight") + 73;
+          }
+
+          if (!unreadHeight) {
+            unreadHeight = 0;
+          }
+
+          var element = event.target; ///First check return true if user is at bottom of message area
+          ///Second check return true if 1st unreaded message comes into vieport of user
+
+          if (element.scrollHeight - element.scrollTop === element.clientHeight || ($('.unread').eq(0).offset() ? $('.unread').eq(0).offset().top - $('#message-wrap').height() < 0 : false)) {
+            _this2.newMessage = false;
+            setTimeout(function () {
+              jQuery('.msg').removeClass('unread');
+            }, 2000);
+          }
+        });
+      }
+    },
     /////for adding and configuring vue scolladdmore ///////
     infiniteHandler: function infiniteHandler($state) {
-      //if(this.page == 1){
-      //console.log('l')
-      //    $state.complete();
-      //    setTimeout(()=>{this.page++;$state.reset()},600)
-      //}else{
+      var _this3 = this;
+
+      //console.log(this.userMessage.user.id)
       this.$store.dispatch('userMessage', {
         userId: this.userMessage.user.id,
         page: this.page,
-        chat_start: true
+        chat_start: true,
+        from: 'loader'
       }).then(function (response) {
         if (response == 'havemoredata') {
-          console.log($state);
           $state.loaded();
         } else {
           $state.complete();
         }
+
+        _this3.page++;
       }, function (error) {
         $state.error();
       });
-      this.page++; //}
     },
     ////for configuring and adding emojionearea in textarea//////
     cd: function cd() {
-      var _this2 = this;
+      var _this4 = this;
 
       setTimeout(function () {
         jQuery("#custom-emoji").emojioneArea({
@@ -2134,7 +2196,7 @@ window.onclick = function (event) {
           saveEmojisAs: 'unicode',
           events: {
             keydown: function keydown(editor, event) {
-              _this2.typeingEvent(_this2.userMessage.user.id);
+              _this4.typeingEvent(_this4.userMessage.user.id);
             }
           }
         });
@@ -2147,29 +2209,30 @@ window.onclick = function (event) {
       this.deletealltext = 'Delete';
     },
     activecount: function activecount(activeunreadcoun) {
+      ///this is for infintite scroll loader//
+      this.page = 1;
+      this.infiniteLoaderResetter++; //////
+
       this.$store.dispatch('activeunreadcoun', activeunreadcoun);
     },
     ////on particular user click////
     async: function async(unread, id) {
-      var _this3 = this;
+      var _this5 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee() {
         return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                jQuery('.loader-container').css('display', 'flex'); ///this is for infintite scroll loader//
+                jQuery('.loader-container').css('display', 'flex');
+                _context.next = 3;
+                return _this5.activecount(unread);
 
-                _this3.page = 1; //////
+              case 3:
+                _context.next = 5;
+                return _this5.selectUser(id);
 
-                _context.next = 4;
-                return _this3.activecount(unread);
-
-              case 4:
-                _context.next = 6;
-                return _this3.selectUser(id);
-
-              case 6:
+              case 5:
               case "end":
                 return _context.stop();
             }
@@ -2186,7 +2249,8 @@ window.onclick = function (event) {
 
       this.$store.dispatch('userMessage', {
         userId: userId,
-        chat_start: chat_start
+        chat_start: chat_start,
+        from: 'selectuser'
       }); ////
 
       this.$store.dispatch('userList'); ////for making messages of selected user readed////
@@ -2204,7 +2268,7 @@ window.onclick = function (event) {
     },
     /////when send message button clicked/////
     sendMessage: function sendMessage(e) {
-      var _this4 = this;
+      var _this6 = this;
 
       e.preventDefault();
       var message = jQuery('#custom-emoji').val();
@@ -2224,9 +2288,9 @@ window.onclick = function (event) {
           message: message,
           user_id: this.userMessage.user.id
         }).then(function (response) {
-          _this4.singleMessageId = response.data.id - 1;
+          _this6.singleMessageId = response.data.id - 1;
 
-          _this4.$store.dispatch('messageAdd', {
+          _this6.$store.dispatch('messageAdd', {
             id: response.data.id - 1,
             read: response.data.read,
             psuedoId: random
@@ -2244,22 +2308,22 @@ window.onclick = function (event) {
       document.getElementById('id01').style.display = 'flex';
     },
     deleteSingleMessage: function deleteSingleMessage(messageId) {
-      var _this5 = this;
+      var _this7 = this;
 
       this.deletealldisable = true;
       this.deletealltext = 'Deleting...';
       axios.get("/deletesinglemessage/".concat(messageId)).then(function (response) {
-        _this5.$store.dispatch('psuedoMessageDelete', {
+        _this7.$store.dispatch('psuedoMessageDelete', {
           messageId: messageId,
           userMessageId: jQuery('.list.active .latest-message').attr("data-id")
         });
 
         document.getElementById('id01').style.display = 'none';
-        _this5.deletealldisable = false;
-        _this5.deletealltext = 'Delete';
+        _this7.deletealldisable = false;
+        _this7.deletealltext = 'Delete';
       })["catch"](function (error) {
-        _this5.deletealldisable = false;
-        _this5.deletealltext = 'Try again';
+        _this7.deletealldisable = false;
+        _this7.deletealltext = 'Try again';
       });
     },
     ////when allmessage delete button clicked this function tells popup that this is for all message delete///
@@ -2268,23 +2332,23 @@ window.onclick = function (event) {
       this.deleteType = 'all';
     },
     deleteAllMessage: function deleteAllMessage() {
-      var _this6 = this;
+      var _this8 = this;
 
       this.deletealldisable = true;
       this.deletealltext = 'Deleting...';
       axios.get("/deleteallmessage/".concat(this.userMessage.user.id)).then(function (response) {
-        _this6.$store.dispatch('psuedoMessageDelete', {
+        _this8.$store.dispatch('psuedoMessageDelete', {
           messageId: '',
           userMessageId: jQuery('.list.active .latest-message').attr("data-id")
         });
 
         document.getElementById('id01').style.display = 'none';
-        _this6.deletealldisable = false;
-        _this6.deletealltext = 'Delete';
+        _this8.deletealldisable = false;
+        _this8.deletealltext = 'Delete';
       })["catch"](function (error) {
         ///when any error occur in deleting message////
-        _this6.deletealldisable = false;
-        _this6.deletealltext = 'Try again';
+        _this8.deletealldisable = false;
+        _this8.deletealltext = 'Try again';
       });
     },
     ///typing event triggers from cd()////
@@ -4114,7 +4178,8 @@ __webpack_require__.r(__webpack_exports__);
   state: {
     userList: [],
     userMessage: [],
-    activeunreadcoun: ''
+    activeunreadcoun: '',
+    loaderchecker: 1
   },
   mutations: {
     userList: function userList(state, payload) {
@@ -4269,6 +4334,13 @@ __webpack_require__.r(__webpack_exports__);
       var limit = 5;
       limit = Number(context.state.activeunreadcoun) > limit - 3 ? Number(context.state.activeunreadcoun) + limit : Number(limit);
       return new Promise(function (resolve, reject) {
+        //if(payload.from == 'loader' && payload.page == 1 && context.state.loaderchecker == 1)
+        //{
+        //    console.log(payload)
+        //    setTimeout(()=>{
+        //    resolve('loaded');},200);
+        //    context.state.loaderchecker++;
+        //}else{
         axios__WEBPACK_IMPORTED_MODULE_0___default().get('/usermessage/' + payload.userId + '/' + payload.page + '/' + limit).then(function (response) {
           context.commit("userMessage", {
             data: response.data,
@@ -4278,7 +4350,10 @@ __webpack_require__.r(__webpack_exports__);
           resolve(limit - response.data.messages.length > 0 ? 'completed' : 'havemoredata');
         }, function (error) {
           reject(error);
-        });
+        }); //    if(context.state.loaderchecker == 2){
+        //        context.state.loaderchecker = 1;
+        //    }
+        //}
       });
     },
     //not used anywhere in web app but for future use if we want to make selected user at top of userlist////
@@ -68577,13 +68652,36 @@ var render = function() {
           _vm.userMessage.messages
             ? _c(
                 "div",
-                { staticClass: "message-wrap", attrs: { id: "message-wrap" } },
+                {
+                  staticClass: "message-wrap",
+                  attrs: { id: "message-wrap" },
+                  on: { scroll: _vm.newMessageChecker }
+                },
                 [
+                  _vm.newMessage
+                    ? _c(
+                        "span",
+                        {
+                          staticClass: "new-message",
+                          on: { click: _vm.scrollToNewMessage }
+                        },
+                        [
+                          _vm._v(
+                            _vm._s(
+                              _vm.newMessageCount + 1 == 1
+                                ? "New Message "
+                                : "New Messages "
+                            ) + _vm._s(_vm.newMessageCount + 1)
+                          )
+                        ]
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
                   _c(
                     "infinite-loading",
                     {
                       attrs: {
-                        identifier: _vm.userMessage.user.id + new Date(),
+                        identifier: _vm.userMessage.user.id,
                         spinner: "waveDots",
                         direction: "top"
                       },

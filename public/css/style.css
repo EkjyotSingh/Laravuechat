@@ -390,6 +390,33 @@
       margin-left:13px;
       display:none;
   }
+  .new-message{
+    position: fixed;
+    background: #65bdef;
+    text-align:center;
+    padding: 10px 20px;
+    border-radius: 36px;
+    transform: translate(50%,0px);
+    color: black;
+    cursor: pointer;
+    right: 50%;
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.7);
+    animation-name: stretch;
+    animation-duration: 1s;
+    animation-timing-function: ease-out;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+    animation-play-state: running;
+  }
+  @keyframes stretch {
+    0% {
+        transform: translate(50%,0px);
+    }
+
+    100% {
+        transform: translate(50%,5px);
+    }
+}
   @media only screen and (max-width: 320px){
       .latest-message{
       /*width: 185px;*/
@@ -406,6 +433,19 @@
   }
   }
   @media only screen and (min-width: 767px){
+    .new-message{
+        right:auto;
+        transform: translate(0px,0px);
+      }
+      @keyframes stretch {
+        0% {
+            transform: translateY(0px);
+        }
+    
+        100% {
+            transform: translateY(5px);
+        }
+    }
       .navbar{
       display: none;
   }

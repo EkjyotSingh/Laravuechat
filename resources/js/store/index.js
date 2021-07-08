@@ -5,6 +5,7 @@ export default {
       userList:[],
       userMessage:[],
       activeunreadcoun:'',
+      loaderchecker:1,
     },
   mutations: {  
     userList(state,payload){
@@ -162,13 +163,24 @@ export default {
         var limit = 5;
         limit = (Number(context.state.activeunreadcoun)>limit -3) ? Number(context.state.activeunreadcoun) + limit : Number(limit) ;
         return new Promise((resolve, reject) => {
-            Axios.get('/usermessage/'+payload.userId+'/'+payload.page+'/'+limit)
-            .then(response=>{
-                context.commit("userMessage",{data:response.data,chat_start:payload.chat_start,page:payload.page});
-                resolve(limit - response.data.messages.length > 0 ? 'completed' : 'havemoredata');
-            },error => {
-                reject(error);
-            })
+            //if(payload.from == 'loader' && payload.page == 1 && context.state.loaderchecker == 1)
+            //{
+            //    console.log(payload)
+            //    setTimeout(()=>{
+            //    resolve('loaded');},200);
+            //    context.state.loaderchecker++;
+            //}else{
+                Axios.get('/usermessage/'+payload.userId+'/'+payload.page+'/'+limit)
+                .then(response=>{
+                    context.commit("userMessage",{data:response.data,chat_start:payload.chat_start,page:payload.page});
+                    resolve(limit - response.data.messages.length > 0 ? 'completed' : 'havemoredata');
+                },error => {
+                    reject(error);
+                })
+            //    if(context.state.loaderchecker == 2){
+            //        context.state.loaderchecker = 1;
+            //    }
+            //}
     })
     },
         //not used anywhere in web app but for future use if we want to make selected user at top of userlist////

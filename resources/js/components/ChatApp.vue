@@ -48,8 +48,9 @@
             </div>
             </header>
             <div style="height:calc(100vh - 126px );">
-            <div v-if="userMessage.messages" id="message-wrap" class="message-wrap" >
-            <infinite-loading :identifier="userMessage.user.id + new Date()"  spinner="waveDots" direction="top" @infinite="infiniteHandler" >
+            <div v-if="userMessage.messages" id="message-wrap" class="message-wrap" @scroll="newMessageChecker">
+            <span v-if="newMessage" @click="scrollToNewMessage" class="new-message">{{(newMessageCount + 1) == 1 ? 'New Message ' : 'New Messages ' }}{{newMessageCount + 1}}</span>
+            <infinite-loading :identifier="userMessage.user.id"  spinner="waveDots" direction="top" @infinite="infiniteHandler">
                 <span slot="no-more"></span>
                  <div slot="no-results"></div>
                  <div slot="error" slot-scope="{ trigger }">
@@ -132,6 +133,15 @@ export default {
                 this.$store.dispatch('messageReceive',e);
                 this.readedEvent(e.message.from);
                 this.singleMessageId = e.message.id;
+                ////check if message area is scrollable or not.If not then don't show new message button/////
+                if(document.getElementById('message-wrap').scrollHeight > document.getElementById('message-wrap').clientHeight){
+                    this.newMessageCount=document.getElementsByClassName('unread').length;
+                    this.newMessage=true;
+                }else{
+                    setTimeout(function(){
+                        jQuery('.msg').removeClass('unread')
+                    },3000)
+                }
                 axios.get('/message-readed/'+e.message.from)
                 .then(response=>{
                 })
@@ -185,6 +195,9 @@ export default {
         },
     data(){
         return{
+            newMessageCount:1,
+            newMessage:false,
+            infiniteLoaderResetter:1,
             timerId:'',
             page: 1,
             message:'',
@@ -234,26 +247,62 @@ export default {
         }
     },
     methods:{
+        ////when clicked on new message button this function scrolls to new message///////
+        scrollToNewMessage(){
+            var unreadHeight = 0;
+                for(var i=1;i <= $('.unread').length ; i++){
+                    var unreadHeight = unreadHeight + jQuery('.unread').eq(Number(-i)).prop("scrollHeight")+73;
+                }
+                if(!unreadHeight){
+                    unreadHeight = 0;
+                }
+                var chatWindow = document.getElementById('message-wrap');
+                var xH = chatWindow.scrollHeight - unreadHeight;
+                chatWindow.scrollTo(xH, xH);
+                this.newMessage=false;
+                setTimeout(function(){
+                    jQuery('.msg').removeClass('unread')
+                },2000)
+        },
+        /////when new message recieved from selected user if scroll is at bottom then new message indicator is hidden by this function///////
+        newMessageChecker(){
+            if(this.userMessage.messages && this.userMessage.messages.length>0){
+                var element = document.getElementById('message-wrap');
+                element.addEventListener('scroll', event=>{
+                    var unreadHeight = 0;
+                    for(var i=1;i <= $('.unread').length ; i++){
+                        var unreadHeight = unreadHeight + jQuery('.unread').eq(Number(-i)).prop("scrollHeight")+73;
+                    }
+                    if(!unreadHeight){
+                        unreadHeight = 0;
+                    }
+                    var element = event.target;
+                    ///First check return true if user is at bottom of message area
+                    ///Second check return true if 1st unreaded message comes into vieport of user
+                    if (element.scrollHeight - element.scrollTop === element.clientHeight || ($('.unread').eq(0).offset() ? (($('.unread').eq(0).offset().top - $('#message-wrap').height() ) < 0) : false ))
+                    {
+                        this.newMessage = false;
+                        setTimeout(function(){
+                            jQuery('.msg').removeClass('unread')
+                        },2000)
+                    }
+                });
+            }
+        },
         /////for adding and configuring vue scolladdmore ///////
         infiniteHandler($state) {
-            //if(this.page == 1){
-                //console.log('l')
-            //    $state.complete();
-            //    setTimeout(()=>{this.page++;$state.reset()},600)
-            //}else{
-            this.$store.dispatch('userMessage',{userId:this.userMessage.user.id,page:this.page,chat_start:true})
+            //console.log(this.userMessage.user.id)
+            this.$store.dispatch('userMessage',{userId:this.userMessage.user.id,page:this.page,chat_start:true,from:'loader'})
             .then(response => {
                 if(response == 'havemoredata'){
-                    console.log($state)
                     $state.loaded();
                 }else{
                     $state.complete();
                 }
+                this.page++;
                 }, error => {
                     $state.error();
             })
-            this.page++;
-            //}
             
         },
         ////for configuring and adding emojionearea in textarea//////
@@ -277,14 +326,15 @@ export default {
             this.deletealltext='Delete';
         },
         activecount(activeunreadcoun){
+            ///this is for infintite scroll loader//
+            this.page = 1;
+            this.infiniteLoaderResetter++;
+            //////
             this.$store.dispatch('activeunreadcoun',activeunreadcoun)
             },
             ////on particular user click////
         async async(unread,id){
             jQuery('.loader-container').css('display','flex');
-            ///this is for infintite scroll loader//
-            this.page = 1;
-            //////
             await this.activecount(unread); 
             await this.selectUser(id);
         },
@@ -296,7 +346,7 @@ export default {
         selectUser(userId,chat_start){
             this.chat_start =true;
             ////for getting messages of selected userd
-            this.$store.dispatch('userMessage',{userId:userId,chat_start:chat_start});
+            this.$store.dispatch('userMessage',{userId:userId,chat_start:chat_start,from:'selectuser'});
             ////
             this.$store.dispatch('userList');
             ////for making messages of selected user readed////

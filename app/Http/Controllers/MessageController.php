@@ -19,6 +19,7 @@ class MessageController extends Controller
         //dd($users);
         if(\Request::ajax()){
 
+            /////For pgsql
             $unreadIds = Message::select(\DB::raw('"from" as sender_id, count("from") as messages_count' ))
             ->where('to', auth()->id())
             ->where('read', false)
@@ -35,6 +36,8 @@ class MessageController extends Controller
             ->groupBy('from')
             ->unionall($to)
             ->get();
+
+            ////For mysql
             //$unreadIds = Message::select(\DB::raw('`from` as sender_id, count(`from`) as messages_count' ))
             //->where('to', auth()->id())
             //->where('read', false)
