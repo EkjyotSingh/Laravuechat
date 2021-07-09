@@ -50,7 +50,7 @@
             <div style="height:calc(100vh - 126px );">
             <div v-if="userMessage.messages" id="message-wrap" class="message-wrap" @scroll="newMessageChecker">
             <span v-if="newMessage" @click="scrollToNewMessage" class="new-message">{{(newMessageCount + 1) == 1 ? 'New Message ' : 'New Messages ' }}{{newMessageCount + 1}}</span>
-            <infinite-loading :identifier="userMessage.user.id"  spinner="waveDots" direction="top" @infinite="infiniteHandler">
+            <infinite-loading :identifier="userMessage.user.id" :distance="1000" spinner="waveDots" direction="top" @infinite="infiniteHandler" v-if="infiniteLoaderResseter > 1">
                 <span slot="no-more"></span>
                  <div slot="no-results"></div>
                  <div slot="error" slot-scope="{ trigger }">
@@ -63,7 +63,7 @@
                     <div class="msg" v-bind:class="[message.to == authuserr.id ? (message.read == 0 ? 'unread': '') : '']">{{message.message}}</div>
                     <span v-if="message.from == userMessage.user.id" @click.prevent="deleteSingleIdChange(message.id,message.from)" class="single-message-delete-button-right"><i class="fa fa-trash-o"></i></span>
                 </div>
-                <div class="time">{{message.created_at | timeformat}} 
+                <div class="time">{{message.created_at | timeformat}}
                     <span v-if="(message.from == authuserr.id &&  /psuedoid/.test(message.id))"><i class="fa fa-clock-o"></i></span>
                     <span v-if="(message.from == authuserr.id && !/psuedoid/.test(message.id) && message.read == 0)"><i class="fa fa-check unread_tick"></i></span>
                     <span v-if="(message.from == authuserr.id && !/psuedoid/.test(message.id) && message.read != 0)"><i class="fa fa-check read_tick"></i></span>
@@ -88,32 +88,29 @@
 
         <!--/////Delete Modal-->
         <div id="id01" class="modal" v-if="userMessage.user">
-  <div class="modal-content" >
-    <div class="modal-container">
-      <h2>{{deleteType == 'all' ?'Delete All Chat' : ''}}</h2>
-      <p>{{deleteType == 'all' ? `Are you sure you want to delete all your chat with ${userMessage.user.name}` : (deleteMessageOwnerId == authuserr.id ? 'Delete Message' : `Delete message from  ${userMessage.user.name}`)}} ?</p>
-
-      <div class="modal-clearfix">
-        <button type="button" class="cancelbtn" @click.prevent="cancelDelete" :disabled="deletealldisable">Cancel</button>
-        <a  class="deletebtn" @click.prevent="(deleteType == 'all') ? (deletealldisable ? '' : deleteAllMessage()) : (deleteSingleMessage(singleMessageId))" >{{deletealltext}}</a>
-      </div>
-    </div>
-  </div>
-</div>
+            <div class="modal-content" >
+                <div class="modal-container">
+                <h2>{{deleteType == 'all' ?'Delete All Chat' : ''}}</h2>
+                <p>{{deleteType == 'all' ? `Are you sure you want to delete all your chat with ${userMessage.user.name}` : (deleteMessageOwnerId == authuserr.id ? 'Delete Message' : `Delete message from  ${userMessage.user.name}`)}} ?</p>
+                <div class="modal-clearfix">
+                    <button type="button" class="cancelbtn" @click.prevent="cancelDelete" :disabled="deletealldisable">Cancel</button>
+                    <a  class="deletebtn" @click.prevent="(deleteType == 'all') ? (deletealldisable ? '' : deleteAllMessage()) : (deleteSingleMessage(singleMessageId))" >{{deletealltext}}</a>
+                </div>
+                </div>
+            </div>
+        </div>
     </div>
     
 </template>
 
 
 <script>
-// Get the modal
 var modal = document.getElementById('id01');
-
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
+    if (event.target == document.getElementById('id01')) {
+        document.getElementById('id01').style.display = "none";
+    }
 }
 import _ from 'lodash';
 import { mapGetters } from "vuex";
@@ -130,18 +127,34 @@ export default {
         Echo.private(`chat.${authuser.id}`)
         .listen('MessageSend', (e) => {
             if(this.chat_start && this.userMessage.user.id == e.message.from){
+                var showMessage= true;
+                if($('#message-wrap').scrollTop() + $('#message-wrap').innerHeight() >= $('#message-wrap')[0].scrollHeight - 110){
+                    ////if user is near to bottom then don't show new message button/////
+                    showMessage=false;
+                }else if(document.getElementById('message-wrap').scrollHeight > document.getElementById('message-wrap').clientHeight){
+                    ////check if message area is scrollable or not.If not then don't show new message button/////
+                    showMessage =true;
+                }else{}
                 this.$store.dispatch('messageReceive',e);
                 this.readedEvent(e.message.from);
                 this.singleMessageId = e.message.id;
-                ////check if message area is scrollable or not.If not then don't show new message button/////
-                if(document.getElementById('message-wrap').scrollHeight > document.getElementById('message-wrap').clientHeight){
-                    this.newMessageCount=document.getElementsByClassName('unread').length;
+                if(showMessage){
                     this.newMessage=true;
                 }else{
+                    setTimeout(function(){
+                        var unreadHeight =jQuery('.unread').eq(0).prop("scrollHeight")+73;
+                    if(!unreadHeight){
+                        unreadHeight = 0;
+                    }
+                    var chatWindow = document.getElementById('message-wrap');
+                    var xH = chatWindow.scrollHeight - unreadHeight;
+                    chatWindow.scrollTo(xH, xH);
+                    },50);
                     setTimeout(function(){
                         jQuery('.msg').removeClass('unread')
                     },3000)
                 }
+                this.newMessageCount=document.getElementsByClassName('unread').length;
                 axios.get('/message-readed/'+e.message.from)
                 .then(response=>{
                 })
@@ -191,13 +204,11 @@ export default {
                     return '';
                 })
             });
-
-        },
+    },
     data(){
         return{
             newMessageCount:1,
             newMessage:false,
-            infiniteLoaderResetter:1,
             timerId:'',
             page: 1,
             message:'',
@@ -227,6 +238,9 @@ export default {
         },
         userMessage(){
             return  this.$store.getters.userMessage;
+        },
+        infiniteLoaderResseter(){
+            return  this.$store.getters.infiniteLoaderResseter;
         },
         ///this is for watcher userMessageUser which loads emojionearea/////
         userMessageUser(){
@@ -277,10 +291,10 @@ export default {
                         unreadHeight = 0;
                     }
                     var element = event.target;
-                    ///First check return true if user is at bottom of message area
-                    ///Second check return true if 1st unreaded message comes into vieport of user
-                    if (element.scrollHeight - element.scrollTop === element.clientHeight || ($('.unread').eq(0).offset() ? (($('.unread').eq(0).offset().top - $('#message-wrap').height() ) < 0) : false ))
+                    if (element.scrollHeight - element.scrollTop === element.clientHeight || ($('.unread').eq(0).offset() ? (($('.unread').eq(0).offset().top - $('#message-wrap').height() ) < 90) : false ))
                     {
+                        ///First check return true if user is at bottom of message area
+                        ///Second check return true if 1st unreaded message comes into vieport of user
                         this.newMessage = false;
                         setTimeout(function(){
                             jQuery('.msg').removeClass('unread')
@@ -288,10 +302,12 @@ export default {
                     }
                 });
             }
+            if ($('#message-wrap').scrollTop() == 0 ) {
+                this.$store.dispatch('infiniteLoaderResseter','');
+            }
         },
         /////for adding and configuring vue scolladdmore ///////
         infiniteHandler($state) {
-            //console.log(this.userMessage.user.id)
             this.$store.dispatch('userMessage',{userId:this.userMessage.user.id,page:this.page,chat_start:true,from:'loader'})
             .then(response => {
                 if(response == 'havemoredata'){
@@ -299,27 +315,47 @@ export default {
                 }else{
                     $state.complete();
                 }
-                this.page++;
-                }, error => {
-                    $state.error();
-            })
-            
+            }, error => {
+                $state.error();
+            }
+            )
+            this.page++;
         },
         ////for configuring and adding emojionearea in textarea//////
         cd(){
+            var e=1;
+            var timerIdForSendingTyping='';
             setTimeout(()=>{
                 jQuery("#custom-emoji").emojioneArea({
                     hidePickerOnBlur: true,
                     saveEmojisAs: 'unicode',
                     events: {
+                        ready: function() {
+                            this.setFocus();
+                        },
                         keydown: (editor, event)=> {
-                            this.typeingEvent(this.userMessage.user.id);
+                            ////typing event will be emitted 1 time in 1 second
+                            if(e == 1){
+                                ///if the selected user is online only then typing event will be emitted
+                                if(this.onlineUser(this.userMessage.user.id)){
+                                    this.typeingEvent(this.userMessage.user.id);
+                                    e++;
+                                }
+                            }else{
+                                if(timerIdForSendingTyping){
+                                    return;
+                                }
+                                timerIdForSendingTyping=setTimeout(()=>{
+                                    e = 1;
+                                    timerIdForSendingTyping=undefined;
+                                },1000);
+                            }
                         }
                     }
                 }); 
             },60)
         },
-        ///when delete popup opens and cancel clicked/////
+        ///when delete popup is openend and cancel clicked/////
         cancelDelete(){
             document.getElementById('id01').style.display='none';
             this.deletealldisable = false;
@@ -328,7 +364,6 @@ export default {
         activecount(activeunreadcoun){
             ///this is for infintite scroll loader//
             this.page = 1;
-            this.infiniteLoaderResetter++;
             //////
             this.$store.dispatch('activeunreadcoun',activeunreadcoun)
             },
@@ -336,21 +371,25 @@ export default {
         async async(unread,id){
             jQuery('.loader-container').css('display','flex');
             await this.activecount(unread); 
-            await this.selectUser(id);
+            await this.selectUser(unread,id);
         },
         /////for mobile user sidebar opened bydefault/////
         openCoversations(){
             jQuery('#sidebar').toggleClass('opened');
         },
         
-        selectUser(userId,chat_start){
+        selectUser(unread,userId,chat_start){
             this.chat_start =true;
-            ////for getting messages of selected userd
-            this.$store.dispatch('userMessage',{userId:userId,chat_start:chat_start,from:'selectuser'});
+            ////making the infinite loader display none at first time so that it will not fetch data at first time bcoz first time data is fetched from select user dispatch////
+            this.$store.dispatch('infiniteLoaderResseter','first');
+            ////for getting messages of selected user
+            this.$store.dispatch('userMessage',{userId:userId,chat_start:chat_start});
             ////
             this.$store.dispatch('userList');
-            ////for making messages of selected user readed////
-            this.readedEvent(userId);
+            ////after selecting particular user message readed event will be emitted only when from that user new messages are there////
+            if(unread != 0){
+                this.readedEvent(userId);
+            }
             ////
             ///for mobile user sidebar closed after selecting user///
             jQuery('#sidebar').removeClass('opened');

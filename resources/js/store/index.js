@@ -5,7 +5,7 @@ export default {
       userList:[],
       userMessage:[],
       activeunreadcoun:'',
-      loaderchecker:1,
+      infiniteLoaderResseter:1,
     },
   mutations: {  
     userList(state,payload){
@@ -30,8 +30,8 @@ export default {
         setTimeout(()=>{
             if(!payload.chat_start){
                 var unreadHeight = 0;
-                for(var i=1;i <= Number(state.activeunreadcoun) ; i++){
-                    var unreadHeight = unreadHeight + jQuery('.unread').eq(Number(-i)).prop("scrollHeight")+73;
+                for(var i=0;i < Number(state.activeunreadcoun) ; i++){
+                    var unreadHeight = unreadHeight + jQuery('.unread').eq(i).prop("scrollHeight")+73;
                 }
                 if(!unreadHeight){
                     unreadHeight = 0;
@@ -39,6 +39,8 @@ export default {
                 var chatWindow = document.getElementById('message-wrap');
                 var xH = chatWindow.scrollHeight - unreadHeight;
                 chatWindow.scrollTo(xH, xH);
+                state.activeunreadcoun = '';
+                
             }
         },500);
         jQuery('.loader-container').css('display','none');
@@ -137,7 +139,6 @@ export default {
     messageReceive(state,payload){
         var m = payload.message;
         state.userMessage.messages.push(m);
-
         state.userList=state.userList.filter((user)=>{
             if(user.id == state.userMessage.user.id)
             {
@@ -148,6 +149,13 @@ export default {
             }
             return user;
         });
+    },
+    infiniteLoaderResseter(state,payload){
+        if(payload == 'first'){
+        return state.infiniteLoaderResseter = 1;
+        }else{
+            state.infiniteLoaderResseter++;
+        }
     }
 },
   actions: { 
@@ -163,13 +171,6 @@ export default {
         var limit = 5;
         limit = (Number(context.state.activeunreadcoun)>limit -3) ? Number(context.state.activeunreadcoun) + limit : Number(limit) ;
         return new Promise((resolve, reject) => {
-            //if(payload.from == 'loader' && payload.page == 1 && context.state.loaderchecker == 1)
-            //{
-            //    console.log(payload)
-            //    setTimeout(()=>{
-            //    resolve('loaded');},200);
-            //    context.state.loaderchecker++;
-            //}else{
                 Axios.get('/usermessage/'+payload.userId+'/'+payload.page+'/'+limit)
                 .then(response=>{
                     context.commit("userMessage",{data:response.data,chat_start:payload.chat_start,page:payload.page});
@@ -177,11 +178,8 @@ export default {
                 },error => {
                     reject(error);
                 })
-            //    if(context.state.loaderchecker == 2){
-            //        context.state.loaderchecker = 1;
-            //    }
-            //}
     })
+    
     },
         //not used anywhere in web app but for future use if we want to make selected user at top of userlist////
         userSort(context,payload){
@@ -205,6 +203,9 @@ export default {
         ////works during send message listening event triggers after recieving message this action adds message in chatarea/////
         messageReceive(context,payload){
             context.commit("messageReceive",payload);
+        },
+        infiniteLoaderResseter(context,payload){
+            context.commit("infiniteLoaderResseter",payload);
         }
     },
     getters: {
@@ -214,5 +215,8 @@ export default {
         userMessage(state){
             return state.userMessage
         },
+        infiniteLoaderResseter(state){
+            return state.infiniteLoaderResseter
+        }
     }
 }
