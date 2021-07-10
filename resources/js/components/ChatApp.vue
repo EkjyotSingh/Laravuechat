@@ -4,7 +4,7 @@
         <sidebarr 
         :appUrl="appUrl" 
         :appName="appName"  
-        :profileImagePath="profileImagePath"  
+        :profileImagePath="profileImagePath"
         :online="online" 
         :typing="typing"/>
         <div class="content">
@@ -21,8 +21,9 @@
                      <span class="time">typing...</span>
                 </div>
                 </div>
+                <darknightmode/>
                 <div>
-                    <button class="delete_button" @click="allDeleteMessages" :disabled="userMessage.messages.length == 0"  :style="userMessage.messages.length == 0 ? 'color:#ff00005c;' : 'color: red;'" :title="'Delete all chat with '+userMessage.user.name"><i class="fa fa-trash"></i></button>
+                    <button @click="allDeleteMessages" :disabled="userMessage.messages.length == 0"  :class="[userMessage.messages.length == 0 ? 'delete-all-disable' : 'delete-all-active','delete_button']" :title="'Delete all chat with '+userMessage.user.name"><i class="fa fa-trash"></i></button>
                     <span  role="button" data-toggle="dropdown" id="navbarDropdown"  aria-haspopup="true" aria-expanded="false" v-pre><i class="fa fa-cog" aria-hidden="true"></i></span>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" :href="profileUpdate">Profile Update</a>
@@ -34,6 +35,7 @@
                 </div>
             </div>
             <div v-else style="margin-right:auto; display:flex;justify-content:space-between;align-items:center;flex:1;"><h3 class="user">Conversations</h3>
+            <darknightmode/>
             <span  role="button" data-toggle="dropdown" id="navbarDropdown" aria-haspopup="true" aria-expanded="false" v-pre><i class="fa fa-cog" aria-hidden="true"></i></span>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                 <a class="dropdown-item" :href="profileUpdate">Profile Update</a>
@@ -44,10 +46,10 @@
             </div>
             </div>
             <div class="open">
-                <a href="javascript:void(0)" @click="openCoversations" title="Select Conversation" style="margin-left: 20px;font-size:22px;color: #5d6a75;"><i class="fa fa-users"></i></a>
+                <a href="javascript:void(0)" @click="openCoversations" title="Select Conversation"><i class="fa fa-users select-conv"></i></a>
             </div>
             </header>
-            <div style="height:calc(100vh - 126px );">
+            <div style="height:calc(100vh - 136px );">
             <div v-if="userMessage.messages" id="message-wrap" class="message-wrap" @scroll="newMessageChecker">
             <span v-if="newMessage" @click="scrollToNewMessage" class="new-message">{{(newMessageCount + 1) == 1 ? 'New Message ' : 'New Messages ' }}{{newMessageCount + 1}}</span>
             <infinite-loading :identifier="userMessage.user.id" :distance="1000" spinner="waveDots" direction="top" @infinite="infiniteHandler" v-if="infiniteLoaderResseter > 1">
@@ -80,7 +82,7 @@
             <h3 class="no-message-selected">No conversation selected to display</h3>
         </div>
         <div class="message-footer" v-if="userMessage.user">
-            <textarea class="form-control" id="custom-emoji" name="reply" placeholder="Type message here" @keydown="typeingEvent(userMessage.user.id)"  v-model="message" ></textarea>
+            <textarea class="form-control" id="custom-emoji" name="reply" placeholder="Send a message..." @keydown="typeingEvent(userMessage.user.id)"  v-model="message" ></textarea>
             <a href="javascript:void(0);" @click="sendMessage" class="btnsendmsg"><i class="fa fa-telegram"></i></a>
         </div>
     </div>
@@ -116,11 +118,13 @@ import _ from 'lodash';
 import { mapGetters } from "vuex";
 import InfiniteLoading from "vue-infinite-loading";
 import selecteduserloader from "./SelectedUserLoader.vue";
+import darknightmode from "./DarkNightMode.vue";
 import sidebarr from "./Sidebarr.vue";
 export default {
     components: {
         selecteduserloader,
-        sidebarr
+        sidebarr,
+        darknightmode
     },
     mounted(){
         this.authuserr=authuser;
@@ -327,12 +331,9 @@ export default {
             var timerIdForSendingTyping='';
             setTimeout(()=>{
                 jQuery("#custom-emoji").emojioneArea({
-                    hidePickerOnBlur: true,
+                    hidePickerOnBlur: false,
                     saveEmojisAs: 'unicode',
                     events: {
-                        ready: function() {
-                            this.setFocus();
-                        },
                         keydown: (editor, event)=> {
                             ////typing event will be emitted 1 time in 1 second
                             if(e == 1){

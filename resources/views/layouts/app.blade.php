@@ -21,11 +21,17 @@
     
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+    {{--<link href="{{ asset('css/style.css') }}" rel="stylesheet">--}}
+        <link href="{{ asset('css/style.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/emojionearea.min.css') }}" rel="stylesheet">
 @yield('style')
 </head>
 <body>
+    <script>
+        if(localStorage.getItem('darkmodelaravuechat') == 'on'){
+            document.body.className +='dark';
+        }
+    </script>
     @if(\Auth::check())
     {{--<div id="app">--}}
         <nav class="navbar navbar-expand-md navbar-light navbar-laravel">
