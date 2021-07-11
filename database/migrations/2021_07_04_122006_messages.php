@@ -19,7 +19,8 @@ class Messages extends Migration
             $table->unsignedBigInteger('to')->comment('Other Id'); // Other Id
             $table->boolean('read')->default(false);
             $table->text('message');
-            $table->boolean('type');
+            $table->unsignedBigInteger('sender')->default(0);
+            $table->unsignedBigInteger('reciever')->default(0);
             $table->timestamps();
         });
     }

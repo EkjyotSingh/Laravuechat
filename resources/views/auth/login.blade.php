@@ -362,9 +362,32 @@ section .containerrr .signinBx .imgBx{
 }
 section .containerrr.active .signinBx .imgBx
 {
-        top:-100%;
+    top:-100%;
 }
 
+.dark section .containerrr .user .formBx {
+    background: #202128;
+}    
+.dark section .containerrr .user .formBx h2 {
+    color: #f1f1f3;
+}
+.dark section .containerrr .user .formBx .signup {
+    color: #a59c9c;
+}
+.dark .formBx a{
+    color:#6b5dd3;
+}
+.dark section .containerrr .user .formBx input[type="text"], .dark section .containerrr .user .formBx input[type="email"], .dark section .containerrr .user .formBx input[type="password"] {
+    background: #373a42;
+    color:#f1f1f3;
+}
+.dark section .containerrr .user .formBx button{
+    background:#6b5dd3;
+
+}
+.dark .svg circle{
+    stroke:#6b5dd3;
+}
 @media (max-width: 991px){
     section .containerrr{
         max-width:400px;

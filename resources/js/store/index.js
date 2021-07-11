@@ -27,22 +27,26 @@ export default {
         }else{
             state.userMessage = payload.data;
         }
-        setTimeout(()=>{
-            if(!payload.chat_start){
-                var unreadHeight = 0;
-                for(var i=0;i < Number(state.activeunreadcoun) ; i++){
-                    var unreadHeight = unreadHeight + jQuery('.unread').eq(i).prop("scrollHeight")+73;
+        if(payload.dispacher != 'loader')
+        ////if dispatched from loader no need to scroll to any posiiton//////
+        {
+            setTimeout(()=>{
+                if(!payload.chat_start){
+                    var unreadHeight = 0;
+                    for(var i=0;i < Number(state.activeunreadcoun) ; i++){
+                        var unreadHeight = unreadHeight + jQuery('.unread').eq(i).prop("scrollHeight")+73;
+                    }
+                    if(!unreadHeight){
+                        unreadHeight = 0;
+                    }
+                    var chatWindow = document.getElementById('message-wrap');
+                    var xH = chatWindow.scrollHeight - unreadHeight;
+                    chatWindow.scrollTo(xH, xH);
+                    state.activeunreadcoun = '';
+                    
                 }
-                if(!unreadHeight){
-                    unreadHeight = 0;
-                }
-                var chatWindow = document.getElementById('message-wrap');
-                var xH = chatWindow.scrollHeight - unreadHeight;
-                chatWindow.scrollTo(xH, xH);
-                state.activeunreadcoun = '';
-                
-            }
-        },500);
+            },500);
+        }
         jQuery('.loader-container').css('display','none');
         return state.userMessage;
     },
@@ -115,6 +119,7 @@ export default {
             if(message.id == 'psuedoid-'+payload.psuedoId){
                 message.id = payload.id;
                 message.read = payload.read;
+                message.created_at = payload.created_at;
                 return message;
             }
             return message;
@@ -173,7 +178,7 @@ export default {
         return new Promise((resolve, reject) => {
                 Axios.get('/usermessage/'+payload.userId+'/'+payload.page+'/'+limit)
                 .then(response=>{
-                    context.commit("userMessage",{data:response.data,chat_start:payload.chat_start,page:payload.page});
+                    context.commit("userMessage",{data:response.data,chat_start:payload.chat_start,page:payload.page,dispacher:payload.dispacher});
                     resolve(limit - response.data.messages.length > 0 ? 'completed' : 'havemoredata');
                 },error => {
                     reject(error);
@@ -204,6 +209,7 @@ export default {
         messageReceive(context,payload){
             context.commit("messageReceive",payload);
         },
+        /////with this 1st time infinite loader is invisible depending on payload it is making infinite loader visible////
         infiniteLoaderResseter(context,payload){
             context.commit("infiniteLoaderResseter",payload);
         }

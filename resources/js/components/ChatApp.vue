@@ -49,6 +49,8 @@
                 <a href="javascript:void(0)" @click="openCoversations" title="Select Conversation"><i class="fa fa-users select-conv"></i></a>
             </div>
             </header>
+
+
             <div style="height:calc(100vh - 136px );">
             <div v-if="userMessage.messages" id="message-wrap" class="message-wrap" @scroll="newMessageChecker">
             <span v-if="newMessage" @click="scrollToNewMessage" class="new-message">{{(newMessageCount + 1) == 1 ? 'New Message ' : 'New Messages ' }}{{newMessageCount + 1}}</span>
@@ -83,7 +85,7 @@
         </div>
         <div class="message-footer" v-if="userMessage.user">
             <textarea class="form-control" id="custom-emoji" name="reply" placeholder="Send a message..." @keydown="typeingEvent(userMessage.user.id)"  v-model="message" ></textarea>
-            <a href="javascript:void(0);" @click="sendMessage" class="btnsendmsg"><i class="fa fa-telegram"></i></a>
+            <a href="javascript:void(0);" @click="sendMessage" class="btnsendmsg"></a>
         </div>
     </div>
 </div>
@@ -312,7 +314,7 @@ export default {
         },
         /////for adding and configuring vue scolladdmore ///////
         infiniteHandler($state) {
-            this.$store.dispatch('userMessage',{userId:this.userMessage.user.id,page:this.page,chat_start:true,from:'loader'})
+            this.$store.dispatch('userMessage',{userId:this.userMessage.user.id,page:this.page,chat_start:true,dispacher:'loader'})
             .then(response => {
                 if(response == 'havemoredata'){
                     $state.loaded();
@@ -384,7 +386,7 @@ export default {
             ////making the infinite loader display none at first time so that it will not fetch data at first time bcoz first time data is fetched from select user dispatch////
             this.$store.dispatch('infiniteLoaderResseter','first');
             ////for getting messages of selected user
-            this.$store.dispatch('userMessage',{userId:userId,chat_start:chat_start});
+            this.$store.dispatch('userMessage',{userId:userId,chat_start:chat_start,dispacher:'selectuser'});
             ////
             this.$store.dispatch('userList');
             ////after selecting particular user message readed event will be emitted only when from that user new messages are there////
@@ -417,8 +419,8 @@ export default {
             },20);
             axios.post('/senemessage',{message:message,user_id:this.userMessage.user.id})
             .then(response=>{
-                this.singleMessageId = response.data.id - 1;
-                this.$store.dispatch('messageAdd',{id:response.data.id - 1,read:response.data.read,psuedoId:random});
+                this.singleMessageId = response.data.id;
+                this.$store.dispatch('messageAdd',{id:response.data.id,read:response.data.read,psuedoId:random});
             })
             this.message = '';
             jQuery("#custom-emoji")[0].emojioneArea.setText('');

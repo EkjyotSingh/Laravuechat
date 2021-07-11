@@ -23,16 +23,16 @@ class MessageController extends Controller
             $unreadIds = Message::select(\DB::raw('"from" as sender_id, count("from") as messages_count' ))
             ->where('to', auth()->id())
             ->where('read', false)
-            ->where('type', 1)
+            ->where('reciever', auth()->id())
             ->groupBy('from')
             ->get();
             $to=Message::select(\DB::raw('"to" as sender_id, max(id) as latest_msg' ))
             ->where('from', auth()->id())
-            ->where('type', 0)
+            ->where('sender', auth()->id())
             ->groupBy('to');
             $latest_ms=Message::select(\DB::raw('"from" as sender_id, max(id) as latest_msg' ))
             ->where('to', auth()->id())
-            ->where('type', 1)
+            ->where('reciever', auth()->id())
             ->groupBy('from')
             ->unionall($to)
             ->get();
@@ -41,16 +41,16 @@ class MessageController extends Controller
             //$unreadIds = Message::select(\DB::raw('`from` as sender_id, count(`from`) as messages_count' ))
             //->where('to', auth()->id())
             //->where('read', false)
-            //->where('type', 1)
+            //->where('reciever', auth()->id())
             //->groupBy('from')
             //->get();
             //$to=Message::select(\DB::raw('`to` as sender_id, max(id) as latest_msg' ))
             //->where('from', auth()->id())
-            //->where('type', 0)
+            //->where('sender', auth()->id())
             //->groupBy('to');
             //$latest_ms=Message::select(\DB::raw('`from` as sender_id, max(id) as latest_msg' ))
             //->where('to', auth()->id())
-            //->where('type', 1)
+            //->where('reciever', auth()->id())
             //->groupBy('from')
             //->unionall($to)
             //->get();
@@ -96,42 +96,76 @@ class MessageController extends Controller
            'message'=>$request->message,
            'from'=>auth()->user()->id,
            'to'=>$request->user_id,
-           'type'=>0
+            'sender' => auth()->user()->id,
+            'reciever' => $request->user_id
+
        ]);
-       $messages = Message::create([
-        'message'=>$request->message,
-        'from'=>auth()->user()->id,
-        'to'=>$request->user_id,
-        'type'=>1
-    ]);
-    $messages->read = 0;
-    try{
-       broadcast(new MessageSend($messages));
-       return response()->json($messages,201);
-    }
-    catch(RequestException $e){
-echo $e;
-    }
+        $messages->read = 0;
+        try{
+            broadcast(new MessageSend($messages));
+            return response()->json($messages,201);
+        }
+        catch(RequestException $e){
+             echo $e;
+        }
     }
     public function delete_single_message($id=null){
         if(!\Request::ajax()){
           return  abort(404);
         }
         $d=Message::where(function($query) use($id){
-                                $query->where('id',$id);
-                                $query->where('from', auth()->user()->id);
-                                $query->Where('type', '0');
-                            })->orWhere(function($query) use($id){
-                                $query->where('id',$id);
-                                $query->where('to',auth()->user()->id);
-                                $query->where('type',1);
-                            })->first()->delete();
+                            $query->where('id',$id);
+                            $query->where('from', auth()->user()->id);
+                            $query->Where('sender', auth()->user()->id);
+                        })->orWhere(function($query) use($id){
+                            $query->where('id',$id);
+                            $query->where('to',auth()->user()->id);
+                            $query->where('reciever',auth()->user()->id);
+                        })->first();
+
+        if($d->from == auth()->user()->id){
+            if($d->reciever == 0){
+                $d->delete();
+            }else{
+                $d->update([
+                    'sender' => 0,
+                ]);
+            }
+        }else if($d->to == auth()->user()->id){
+            if($d->sender == 0){
+                $d->delete();
+            }else{
+                $d->update([
+                    'reciever' => 0,
+                ]);
+            }
+        }else{}
+                            
         return response()->json('deleted',200);
     }
+
     public function delete_all_message($id=null){
-      $messages =  $this->message_by_user_id($id,'delete','delete');
+        $messages =  $this->message_by_user_id($id,'delete','delete');
         foreach ($messages as $value) {
-          Message::findOrFail($value->id)->delete();
+
+                if($value->from == auth()->user()->id){
+                    if($value->reciever == 0){
+                        $value->delete();
+                    }else{
+                        $value->update([
+                            'sender' => 0,
+                        ]);
+                    }
+                }else if($value->to == auth()->user()->id){
+                    if($value->sender == 0){
+                        $value->delete();
+                    }else{
+                        $value->update([
+                            'reciever' => 0,
+                        ]);
+                    }
+                }else{}
+
         }
         return response()->json('all deleted',200);
     }
@@ -146,11 +180,11 @@ echo $e;
         $messages = Message::where(function($q) use($id){
             $q->where('from',auth()->user()->id);
             $q->where('to',$id);
-            $q->where('type',0);
+            $q->where('sender',auth()->user()->id);
         })->orWhere(function($q) use ($id){
             $q->where('from',$id);
             $q->where('to',auth()->user()->id);
-            $q->where('type',1);
+            $q->where('reciever',auth()->user()->id);
         })->with('user');
 
         if($page == 'delete'){
