@@ -20,40 +20,40 @@ class MessageController extends Controller
         if(\Request::ajax()){
 
             /////For pgsql
-            $unreadIds = Message::select(\DB::raw('"from" as sender_id, count("from") as messages_count' ))
-            ->where('to', auth()->id())
-            ->where('read', false)
-            ->where('reciever', auth()->id())
-            ->groupBy('from')
-            ->get();
-            $to=Message::select(\DB::raw('"to" as sender_id, max(id) as latest_msg' ))
-            ->where('from', auth()->id())
-            ->where('sender', auth()->id())
-            ->groupBy('to');
-            $latest_ms=Message::select(\DB::raw('"from" as sender_id, max(id) as latest_msg' ))
-            ->where('to', auth()->id())
-            ->where('reciever', auth()->id())
-            ->groupBy('from')
-            ->unionall($to)
-            ->get();
-
-            ////For mysql
-            //$unreadIds = Message::select(\DB::raw('`from` as sender_id, count(`from`) as messages_count' ))
+            //$unreadIds = Message::select(\DB::raw('"from" as sender_id, count("from") as messages_count' ))
             //->where('to', auth()->id())
             //->where('read', false)
             //->where('reciever', auth()->id())
             //->groupBy('from')
             //->get();
-            //$to=Message::select(\DB::raw('`to` as sender_id, max(id) as latest_msg' ))
+            //$to=Message::select(\DB::raw('"to" as sender_id, max(id) as latest_msg' ))
             //->where('from', auth()->id())
             //->where('sender', auth()->id())
             //->groupBy('to');
-            //$latest_ms=Message::select(\DB::raw('`from` as sender_id, max(id) as latest_msg' ))
+            //$latest_ms=Message::select(\DB::raw('"from" as sender_id, max(id) as latest_msg' ))
             //->where('to', auth()->id())
             //->where('reciever', auth()->id())
             //->groupBy('from')
             //->unionall($to)
             //->get();
+
+            ////For mysql
+            $unreadIds = Message::select(\DB::raw('`from` as sender_id, count(`from`) as messages_count' ))
+            ->where('to', auth()->id())
+            ->where('read', false)
+            ->where('reciever', auth()->id())
+            ->groupBy('from')
+            ->get();
+            $to=Message::select(\DB::raw('`to` as sender_id, max(id) as latest_msg' ))
+            ->where('from', auth()->id())
+            ->where('sender', auth()->id())
+            ->groupBy('to');
+            $latest_ms=Message::select(\DB::raw('`from` as sender_id, max(id) as latest_msg' ))
+            ->where('to', auth()->id())
+            ->where('reciever', auth()->id())
+            ->groupBy('from')
+            ->unionall($to)
+            ->get();
             
         // add an unread key to each contact with the count of unread messages
         $user = $users->map(function($contact) use ($unreadIds , $latest_ms) {

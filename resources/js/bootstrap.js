@@ -43,7 +43,7 @@ if (token) {
 
  window.Echo = new Echo({
      broadcaster: 'pusher',
-     key: '9776e5e54273f46b8b34',
+     key: '',
      cluster: 'ap2',
     // encrypted:false,
     //wsHost: window.location.hostname,
