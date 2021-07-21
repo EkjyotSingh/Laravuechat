@@ -8,7 +8,9 @@ import emojione from './emojionearea/dist/emojionearea'
 import storeVuex from './store/index'
 Vue.use(Vuex)
 Vue.use(emojione)
-
+Vue.config.devtools = false;
+    Vue.config.debug = false;
+    Vue.config.silent = true; 
 const store = new Vuex.Store(storeVuex)
 Vue.config.ignoredElements = ['sidebar']
 Vue.component('main-app', require('./components/MainApp.vue').default);

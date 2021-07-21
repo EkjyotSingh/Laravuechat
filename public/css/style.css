@@ -74,6 +74,9 @@
     background:#3f8cff;
     color:white;
   }
+  sidebar .list-wrap .list:hover .time, sidebar .list-wrap .list.active .time{
+    color:white;
+  }
   sidebar .list-wrap .list:hover .fa-wifi, sidebar .list-wrap .list.active .fa-wifi{
     color:white;
   }
@@ -571,7 +574,7 @@
     font-size:15px;
 }
 .fa-circle{
-color: #1fbb1f;
+color: #08fd08;
 }
 .navbar-light .navbar-brand {
     font-size: 25px;

@@ -62,6 +62,7 @@ class MessageController extends Controller
             $l_msg=$r ?Message::where('id',$r->latest_msg)->first() : null;
             $contact->latestMessage = $l_msg ? $l_msg->message : '';
             $contact->latestMessageId = $l_msg ? $l_msg->id : '';
+            $contact->latestMessageCreatedAt = $l_msg ? $l_msg->created_at : '';
             $contact->unread = $contactUnread ? $contactUnread->messages_count : 0;
             return $contact;
             
@@ -70,13 +71,13 @@ class MessageController extends Controller
     }
         return abort(404);
     }
-    public function user_message($id=null,$page=0,$limit=0){
+    public function user_message($id=null,$page=0,$limit=0,$offsetId=0){
         if(!\Request::ajax()){
            return abort(404);
         }
 
         $user = User::findOrFail($id);
-       $messages = $this-> message_by_user_id($id ,$page,$limit);
+       $messages = $this->message_by_user_id($id ,$page,$limit,$offsetId);
     //   Message::where('from', $id)->where('to', auth()->id())->update(['read' => true]);
     $this->message_readed($id);
 
@@ -145,7 +146,7 @@ class MessageController extends Controller
     }
 
     public function delete_all_message($id=null){
-        $messages =  $this->message_by_user_id($id,'delete','delete');
+        $messages =  $this->message_by_user_id($id,'delete','delete',0);
         foreach ($messages as $value) {
 
                 if($value->from == auth()->user()->id){
@@ -170,32 +171,31 @@ class MessageController extends Controller
         return response()->json('all deleted',200);
     }
 
-    public function message_by_user_id($id,$page,$limit){
-        if($page == 'delete'){
-        }elseif($page == 0){
-            
-        }else{
-            $offset = (int)$page * $limit;
-        }
-        $messages = Message::where(function($q) use($id){
+    public function message_by_user_id($id,$page,$limit,$offsetId){
+        $messages = Message::where(function($q) use($id,$offsetId){
             $q->where('from',auth()->user()->id);
             $q->where('to',$id);
             $q->where('sender',auth()->user()->id);
-        })->orWhere(function($q) use ($id){
+            if($offsetId != 0){
+                $q->where('id','<',$offsetId);
+            }
+        })->orWhere(function($q) use ($id,$offsetId){
             $q->where('from',$id);
             $q->where('to',auth()->user()->id);
             $q->where('reciever',auth()->user()->id);
+            if($offsetId != 0){
+                $q->where('id','<',$offsetId);
+            }
         })->with('user');
-
         if($page == 'delete'){
             $message= $messages->get();
             return $message;
-        }elseif($page ==0){
+        }elseif($page == 0){
             $messages->orderby('id','desc')->limit($limit);
             $message= $messages->get()->sortBy('id')->values();
             return $message;
         }else{
-            $messages->orderby('id','desc')->offset($offset)->limit($limit);
+            $messages->orderby('id','desc')->limit($limit);
             $message= $messages->get();
             return $message;
         }

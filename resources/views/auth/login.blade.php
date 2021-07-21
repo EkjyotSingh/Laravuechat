@@ -17,11 +17,11 @@
                     <span class="error-msg"></span>
                     <input id="password" type="password" name="password" required placeholder="Password">
                     <span class="error-msg"></span>
-                    <div class="remember">
+                    {{--<div class="remember">
                         <input class="" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
                         <label class="form-check-label rememberlabel" for="remember">Remember Me</label>
                         <span class="error-msg"></span>
-                    </div>
+                    </div>--}}
                     <button type="submit" class="waves-effect waves-light custom-red">Login</button>
                     <div class="svg-container">
                         <svg class="svg">
@@ -381,7 +381,7 @@ section .containerrr.active .signinBx .imgBx
     background: #373a42;
     color:#f1f1f3;
 }
-.dark section .containerrr .user .formBx button{
+.dark section .containerrr .user .formBx .login_form button{
     background:#6b5dd3;
 
 }

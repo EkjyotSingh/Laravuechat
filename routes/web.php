@@ -35,7 +35,7 @@ Route::middleware(['auth'])->group(function(){
 Route::post('/logout', [AuthController::class,'logout'])->name('logout');
 Route::get('userlist', [MessageController::class,'user_list'])->name('user.list');
 Route::get('message-readed/{id}', [MessageController::class,'message_readed'])->name('message.readed');
-Route::get('usermessage/{id}/{page}/{limit}', [MessageController::class,'user_message'])->name('user.message');
+Route::get('usermessage/{id}/{page}/{limit}/{offsetId}', [MessageController::class,'user_message'])->name('user.message');
 Route::post('senemessage', [MessageController::class,'send_message'])->name('user.message.send');
 Route::get('deletesinglemessage/{id}', [MessageController::class,'delete_single_message'])->name('user.message.delete.single');
 Route::get('deleteallmessage/{id}', [MessageController::class,'delete_all_message'])->name('user.message.delete.all');

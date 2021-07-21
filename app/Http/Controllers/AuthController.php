@@ -75,7 +75,7 @@ return view('auth.login');
             if($action) {
                 try {
                     $credentials = $request->only('email', 'password');
-                    $token = Auth::attempt($credentials,true);
+                    $token = Auth::attempt($credentials);
                     return response()->json([
                         'error' => false,
                         'message' => 'Signup is successfull',
@@ -137,7 +137,7 @@ return view('auth.login');
 		}
         try{
             $credentials = $request->only('email', 'password');
-            if (!Auth::attempt($credentials,true)) {
+            if (!Auth::attempt($credentials)) {
                 return response()->json([
                     'error' => true,
                     'message' => 'Invalid Credentials',

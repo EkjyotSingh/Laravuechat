@@ -56,9 +56,9 @@
             <span v-if="newMessage" @click="scrollToNewMessage" class="new-message">{{(newMessageCount + 1) == 1 ? 'New Message ' : 'New Messages ' }}{{newMessageCount + 1}}</span>
             <infinite-loading :identifier="userMessage.user.id" :distance="1000" spinner="waveDots" direction="top" @infinite="infiniteHandler" v-if="infiniteLoaderResseter > 1">
                 <span slot="no-more"></span>
-                 <div slot="no-results"></div>
-                 <div slot="error" slot-scope="{ trigger }">
-                    Error message, click <a href="javascript:;" @click="trigger">here</a> to retry
+                <div slot="no-results"></div>
+                <div slot="error" slot-scope="{ trigger }">
+                    Error message, click <a href="javascript:void(0);" @click="trigger">here</a> to retry
                 </div>
             </infinite-loading>
             <div class="message-list"  v-for="message in userMessage.messages" :key="message.id" :id="'message'+( message.to == authuserr.id ? (message.read == 0 ? '-unread' :'-read') : '')+'-'+message.id" :ref="'message-'+message.id" v-bind:class="[message.to == userMessage.user.id ? 'me' : 'offerer' ]">
@@ -188,9 +188,15 @@ export default {
             });
         Echo.private('messagereaded')
         .listenForWhisper('readed', (e) => {
-        if(e.userId == authuser.id){
+        if(e.userId == authuser.id && e.user == this.userMessage.user.id){
             setTimeout(() => {
-            jQuery('.unread_tick').css('color','#07bf07');
+                var color = '';
+                if($('body').hasClass('dark')){
+                    color = '#08fd08';
+                }else{
+                    color = '#07bf07';
+                }
+            jQuery('.unread_tick').css('color',color);
             }, 1000);
         }
         });
@@ -308,7 +314,7 @@ export default {
                     }
                 });
             }
-            if ($('#message-wrap').scrollTop() == 0 ) {
+            if (this.infiniteLoaderResseter == 1 && $('#message-wrap').scrollTop() == 0  ) {
                 this.$store.dispatch('infiniteLoaderResseter','');
             }
         },
@@ -407,24 +413,24 @@ export default {
 
         /////when send message button clicked/////
         sendMessage(e){
-        e.preventDefault();
-        var message = jQuery('#custom-emoji').val();
-        if(message.trim() != ''){
-            var random = Math.floor(Math.random());
-            this.$store.dispatch('psuedoMessageAdd',{message:message,psuedoId:random});
-            setTimeout(function(){
-                var chatWindow = document.getElementById('message-wrap');
-                var xH = chatWindow.scrollHeight;
-                chatWindow.scrollTo(xH-1, xH);
-            },20);
-            axios.post('/senemessage',{message:message,user_id:this.userMessage.user.id})
-            .then(response=>{
-                this.singleMessageId = response.data.id;
-                this.$store.dispatch('messageAdd',{id:response.data.id,read:response.data.read,psuedoId:random});
-            })
-            this.message = '';
-            jQuery("#custom-emoji")[0].emojioneArea.setText('');
-        }
+            e.preventDefault();
+            var message = jQuery('#custom-emoji').val();
+            if(message.trim() != ''){
+                var random = Math.floor(Math.random());
+                this.$store.dispatch('psuedoMessageAdd',{message:message,psuedoId:random});
+                setTimeout(function(){
+                    var chatWindow = document.getElementById('message-wrap');
+                    var xH = chatWindow.scrollHeight;
+                    chatWindow.scrollTo(xH-1, xH);
+                },20);
+                axios.post('/senemessage',{message:message,user_id:this.userMessage.user.id})
+                .then(response=>{
+                    this.singleMessageId = response.data.id;
+                    this.$store.dispatch('messageAdd',{id:response.data.id,read:response.data.read,psuedoId:random});
+                })
+                this.message = '';
+                jQuery("#custom-emoji")[0].emojioneArea.setText('');
+            }
         },
 
         ////when singlemessage delete button clicked this function is called for changing message id in popup///
@@ -458,17 +464,17 @@ export default {
             this.deletealldisable=true;
             this.deletealltext='Deleting...';
             axios.get(`/deleteallmessage/${this.userMessage.user.id}`)
-        .then(response=>{
-            this.$store.dispatch('psuedoMessageDelete',{messageId:'',userMessageId: jQuery('.list.active .latest-message').attr("data-id")});
-            document.getElementById('id01').style.display='none'
-            this.deletealldisable = false;
-            this.deletealltext='Delete';
-        })
-        .catch(
-            error=> {
-                ///when any error occur in deleting message////
-            this.deletealldisable = false;
-            this.deletealltext='Try again';
+            .then(response=>{
+                this.$store.dispatch('psuedoMessageDelete',{messageId:'',userMessageId: jQuery('.list.active .latest-message').attr("data-id")});
+                document.getElementById('id01').style.display='none'
+                this.deletealldisable = false;
+                this.deletealltext='Delete';
+            })
+            .catch(
+                error=> {
+                    ///when any error occur in deleting message////
+                this.deletealldisable = false;
+                this.deletealltext='Try again';
             })
         },
         ///typing event triggers from cd()////
@@ -484,7 +490,7 @@ export default {
         readedEvent(userId){
         Echo.private('messagereaded')
         .whisper('readed', {
-            'user': authuser,
+            'user': authuser.id,
             'userId':userId
         });
         },

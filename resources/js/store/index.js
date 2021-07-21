@@ -6,16 +6,17 @@ export default {
       userMessage:[],
       activeunreadcoun:'',
       infiniteLoaderResseter:1,
+      offsetId:null
     },
   mutations: {  
     userList(state,payload){
         return state.userList = payload.sort(function (a, b) {
-        if (a.unread === b.unread) {
-            return 0;
-        }
-        else {
-            return (a.unread > b.unread) ? -1 : 1;
-        }
+        //if (a.unread == b.unread == 0 ) {
+                return (a.latestMessageCreatedAt > b.latestMessageCreatedAt) ? -1 : 1;
+        //}else{
+            //return (a.latestMessageCreatedAt > b.latestMessageCreatedAt) ? -1 : 1;
+        //}
+
     });
     },
 
@@ -65,9 +66,9 @@ export default {
             message:payload.message,
             read:0,
             to:state.userMessage.user.id,
-            type:0,
+            sender:authuser.id,
+            reciever:state.userMessage.user.id,
             updated_at:new Date(),
-            
         })
     },
     activeunreadcoun(state,payload){
@@ -82,6 +83,7 @@ export default {
                     {
                         user.latestMessage = '';
                         user.latestMessageId = '';
+                        user.latestMessageCreatedAt = '';
                     }
                 return user;
             });
@@ -101,10 +103,12 @@ export default {
                         {
                             user.latestMessage = state.userMessage.messages[state.userMessage.messages.length - 1].message;
                             user.latestMessageId = state.userMessage.messages[state.userMessage.messages.length - 1].id;
+                            user.latestMessageCreatedAt = state.userMessage.messages[state.userMessage.messages.length - 1].created_at;
                             return user;
                         }else{
                             user.latestMessage = '';
                             user.latestMessageId = '';
+                            user.latestMessageCreatedAt = '';
                             return user;
                         }
                     }
@@ -131,10 +135,13 @@ export default {
                 {
                     user.latestMessage = state.userMessage.messages[state.userMessage.messages.length - 1].message;
                     user.latestMessageId = state.userMessage.messages[state.userMessage.messages.length - 1].id;
+                    user.latestMessageCreatedAt = state.userMessage.messages[state.userMessage.messages.length - 1].created_at;
+
                     return user;
                 }else{
                     user.latestMessage = '';
                     user.latestMessageId = '';
+                    user.latestMessageCreatedAt = '';
                     return user;
                 }
             }
@@ -149,6 +156,7 @@ export default {
             {
                 user.latestMessage = state.userMessage.messages[state.userMessage.messages.length - 1].message;
                 user.latestMessageId = state.userMessage.messages[state.userMessage.messages.length - 1].id;
+                user.latestMessageCreatedAt = state.userMessage.messages[state.userMessage.messages.length - 1].created_at;
                 user.unread = 0;
                 return user;
             }
@@ -157,7 +165,8 @@ export default {
     },
     infiniteLoaderResseter(state,payload){
         if(payload == 'first'){
-        return state.infiniteLoaderResseter = 1;
+            state.offsetId = null;
+            return state.infiniteLoaderResseter = 1;
         }else{
             state.infiniteLoaderResseter++;
         }
@@ -174,16 +183,23 @@ export default {
         ////usermessage fetch////
     userMessage(context,payload){
         var limit = 5;
-        limit = (Number(context.state.activeunreadcoun)>limit -3) ? Number(context.state.activeunreadcoun) + limit : Number(limit) ;
+        if(payload.dispacher != 'loader'){
+            limit = (Number(context.state.activeunreadcoun)>limit -3) ? Number(context.state.activeunreadcoun) + limit : Number(limit) ;
+        }
         return new Promise((resolve, reject) => {
-                Axios.get('/usermessage/'+payload.userId+'/'+payload.page+'/'+limit)
+                Axios.get('/usermessage/'+payload.userId+'/'+payload.page+'/'+limit+'/'+context.state.offsetId)
                 .then(response=>{
+                    if(payload.dispacher != 'loader'){
+                        context.state.offsetId = response.data.messages.length > 0 ? response.data.messages[0].id :  null;
+                    }else{
+                        context.state.offsetId = response.data.messages.length > 0 ? response.data.messages[response.data.messages.length - 1].id : null;
+                    }
                     context.commit("userMessage",{data:response.data,chat_start:payload.chat_start,page:payload.page,dispacher:payload.dispacher});
                     resolve(limit - response.data.messages.length > 0 ? 'completed' : 'havemoredata');
                 },error => {
                     reject(error);
                 })
-    })
+        })
     
     },
         //not used anywhere in web app but for future use if we want to make selected user at top of userlist////
